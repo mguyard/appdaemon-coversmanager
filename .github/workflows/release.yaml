@@ -1,16 +1,13 @@
 name: Generate Semantic Release
 on:
   workflow_dispatch:
-  pull_request:
+  push:
     branches:
       - main
       - beta
-    types:
-      - closed
 
 jobs:
   release:
-    if: github.event.pull_request.merged == true
     name: Release
     runs-on: ubuntu-latest
     environment:
