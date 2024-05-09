@@ -25,15 +25,15 @@ body:
       required: true
 
   - type: textarea
-      validations:
-        required: true
-      attributes:
-        label: The problem
-        description: >-
-          Describe the issue you are experiencing here, to communicate to the
-          maintainers. Tell us what you were trying to do and what happened.
+    validations:
+      required: true
+    attributes:
+      label: The problem
+      description: >-
+        Describe the issue you are experiencing here, to communicate to the
+        maintainers. Tell us what you were trying to do and what happened.
 
-          Provide a clear and concise description of what the problem is.
+        Provide a clear and concise description of what the problem is.
 
   - type: markdown
       attributes:
@@ -48,10 +48,10 @@ body:
       label: What version of CoversManager has the issue?
 
   - type: input
-      attributes:
-        label: What was the last working version of CoversManager?
-        description: >
-          If known, otherwise leave blank.
+    attributes:
+      label: What was the last working version of CoversManager?
+      description: >
+        If known, otherwise leave blank.
 
   - type: dropdown
     validations:
@@ -72,51 +72,51 @@ body:
       label: What version of AppDaemon are you running?
 
   - type: markdown
-      attributes:
-        value: |
-          ## Details
+    attributes:
+      value: |
+        ## Details
 
   - type: textarea
-      id: homeassistant-sysinfo
-      validations:
-        required: true
-      attributes:
-        label: Home Assistant System Informations
-        description: >
-          Copy and paste here the system information from your Home Assistant instance.
-          Can be found in: [Settings ⇒ System ⇒ Repairs ⇒ Three Dots in Upper Right ⇒ System information](https://my.home-assistant.io/redirect/system_health/).
+    id: homeassistant-sysinfo
+    validations:
+      required: true
+    attributes:
+      label: Home Assistant System Informations
+      description: >
+        Copy and paste here the system information from your Home Assistant instance.
+        Can be found in: [Settings ⇒ System ⇒ Repairs ⇒ Three Dots in Upper Right ⇒ System information](https://my.home-assistant.io/redirect/system_health/).
 
-          [![Open your Home Assistant instance and show the system information.](https://my.home-assistant.io/badges/system_health.svg)](https://my.home-assistant.io/redirect/system_health/)
-
-  - type: textarea
-      id: appdaemon-log
-      validations:
-        required: true
-      attributes:
-        label: AppDaemon Log
-        description: >
-          Copy and paste the relevant parts of the AppDaemon log (appdaemon.log) here.
+        [![Open your Home Assistant instance and show the system information.](https://my.home-assistant.io/badges/system_health.svg)](https://my.home-assistant.io/redirect/system_health/)
 
   - type: textarea
-      id: appdaemon-errorlog
-      validations:
-        required: true
-      attributes:
-        label: AppDaemon Error Log
-        description: >
-          Copy and paste the relevant parts of the AppDaemon Error log (error.log) here.
+    id: appdaemon-log
+    validations:
+      required: true
+    attributes:
+      label: AppDaemon Log
+      description: >
+        Copy and paste the relevant parts of the AppDaemon log (appdaemon.log) here.
 
   - type: textarea
-      id: appdaemon-CoverManagerlog
-      validations:
-        required: true
-      attributes:
-        label: CoverManager Log
-        description: >
-          Copy and paste the relevant parts of the CoverManager App log (CoversManager.log) here.
-          Before providing the log, please make sure that :
-            - you have enabled the [debug mode](https://appdaemon.readthedocs.io/en/latest/APPGUIDE.html#writing-to-logfiles) in the configuration file (log_level: DEBUG)
-            - you have removed any sensitive information.
+    id: appdaemon-errorlog
+    validations:
+      required: true
+    attributes:
+      label: AppDaemon Error Log
+      description: >
+        Copy and paste the relevant parts of the AppDaemon Error log (error.log) here.
+
+  - type: textarea
+    id: appdaemon-CoverManagerlog
+    validations:
+      required: true
+    attributes:
+      label: CoverManager Log
+      description: >
+        Copy and paste the relevant parts of the CoverManager App log (CoversManager.log) here.
+        Before providing the log, please make sure that :
+          - you have enabled the [debug mode](https://appdaemon.readthedocs.io/en/latest/APPGUIDE.html#writing-to-logfiles) in the configuration file (log_level: DEBUG)
+          - you have removed any sensitive information.
 
   - type: textarea
     attributes:
@@ -125,9 +125,9 @@ body:
         If you have any additional information for us, use the field below.
 
   - type: markdown
-      attributes:
-        value: |
-          ## Confirmation
+    attributes:
+      value: |
+        ## Confirmation
 
   - type: checkboxes
     attributes:
