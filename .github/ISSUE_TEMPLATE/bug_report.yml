@@ -36,9 +36,9 @@ body:
         Provide a clear and concise description of what the problem is.
 
   - type: markdown
-      attributes:
-        value: |
-          ## Environment
+    attributes:
+      value: |
+        ## Environment
 
   - type: input
     id: version
