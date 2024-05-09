@@ -4,11 +4,9 @@ run-name: Python Lint
 on:
   push:
     branches:
-      - dev
-  pull_request:
-    branches:
       - main
       - beta
+      - dev
 
 jobs:
   ruff:
