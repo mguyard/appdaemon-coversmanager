@@ -10,7 +10,7 @@ body:
         
         Before you open a new feature request, search through the existing [feature requests][fr] to see if others have had the same idea.
 
-        [fr]: https://github.com/mguyard/appdaemon-covermanager/issues?q=is%3Aissue+label%3A%22Feature+Request%22+
+        [fr]: https://github.com/mguyard/appdaemon-covermanager/issues?q=is%3Aissue+label%3A%22🚀%20feature-request%22+
 
   - type: textarea
     attributes:
