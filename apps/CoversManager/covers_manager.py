@@ -10,7 +10,6 @@ Author : Marc Guyard
 Doc : https://github.com/mguyard/appdaemon-covermanager/blob/main/README.md
 Bug Report : https://github.com/mguyard/appdaemon-covermanager/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml
 Feature Request : https://github.com/mguyard/appdaemon-covermanager/issues/new?assignees=&labels=%F0%9F%9A%80%20feature-request&projects=&template=feature_request.yml
-
 """  # noqa: E501
 
 
