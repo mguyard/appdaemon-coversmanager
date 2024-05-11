@@ -477,7 +477,8 @@ class CoversManager(hass.Hass):
             if self._get_cover_currentposition(cover=kwargs["cover"]) != position:
                 self.log(
                     f"Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) is not "
-                    f"at the required position ({position}) - Actual position : {position}%",
+                    f"at the required position ({position}) "
+                    f"- Actual position : {self._get_cover_currentposition(cover=kwargs['cover'])}%",
                     level="DEBUG",
                 )
                 self._set_cover_position(covers=[kwargs["cover"]], position=position, adaptive=True)
@@ -643,7 +644,8 @@ class CoversManager(hass.Hass):
 
     def _set_openclose_cover_full(self, covers: list, action: str, adaptive: bool = False) -> None:
         """
-        Open or close the covers to a specified position.
+        Open or close the covers to a specified position. Used by the _callback_move_covers method.
+        So only used for open or close covers (not for adaptive mode)
 
         Args:
             covers (list): List of cover entity IDs.
@@ -700,20 +702,36 @@ class CoversManager(hass.Hass):
                 level="INFO",
             )
         else:
-            for cover in covers:
+            for cover in covers.copy():
+                manual_lock_entity = self._get_manuallock_entity(cover=cover)
+                if self.get_state(entity_id=manual_lock_entity["name"]) == "on":
+                    manual_lock_handle = self.get_state(
+                        entity_id=manual_lock_entity["name"], attribute="running_handler"
+                    )
+                    handler_end, _, _ = self.info_timer(handle=manual_lock_handle)
+                    self.log(
+                        f"Cover '{self.friendly_name(entity_id=cover).strip()}' ({cover}) "
+                        "is locked following a manual change. All move are blocked until manual lock "
+                        f"is released (end: {handler_end.strftime('%Y-%m-%d %H:%M:%S')})",
+                        level="INFO",
+                    )
+                    # If cover is locked, remove it from the list of covers to move
+                    covers.remove(cover)
+                    continue
+
                 if adaptive:
                     self.log(f"Updating state of adaptive entity for cover {cover} to {position}%", level="DEBUG")
                     self._create_update_covermanager_entity(
                         entity=self._get_adaptive_entity(cover=cover), state=position
                     )
-            self.log(f"Moving cover {covers} to {position}% ...", level="INFO")
-            self.call_service("cover/set_cover_position", entity_id=covers, position=position)
-            for cover in covers:
-                # if adaptive:
-                #     self._create_update_covermanager_entity(self._get_adaptive_entity(cover), position)
-                self.run_in(
-                    callback=self._callback_verify_cover_status, delay=30, cover=cover, position_required=position
-                )
+
+            if len(covers) > 0:
+                self.log(f"Moving cover {covers} to {position}% ...", level="INFO")
+                self.call_service("cover/set_cover_position", entity_id=covers, position=position)
+                for cover in covers:
+                    self.run_in(
+                        callback=self._callback_verify_cover_status, delay=30, cover=cover, position_required=position
+                    )
 
     def _callback_verify_cover_status(self, **kwargs: dict) -> None:
         """
