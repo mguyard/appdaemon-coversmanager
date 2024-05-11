@@ -453,7 +453,7 @@ class CoversManager(hass.Hass):
             # Check if the outdoor temperature is greater than the outdoor high temperature
             if outdoor_temperature >= int(kwargs["config"].common.temperature.outdoor.high_temperature):
                 self.log(
-                    f"Outdoor temperature ({outdoor_temperature}°) > "
+                    f"Outdoor temperature ({outdoor_temperature}) > "
                     f"{kwargs['config'].common.temperature.outdoor.high_temperature} "
                     f"- Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
                     "need to be close to avoid the heat",
@@ -477,7 +477,7 @@ class CoversManager(hass.Hass):
             if self._get_cover_currentposition(cover=kwargs["cover"]) != position:
                 self.log(
                     f"Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) is not "
-                    f"at the required position ({position})",
+                    f"at the required position ({position}) - Actual position : {position}%",
                     level="DEBUG",
                 )
                 self._set_cover_position(covers=[kwargs["cover"]], position=position, adaptive=True)
@@ -902,6 +902,11 @@ class CoversManager(hass.Hass):
                 and self.get_state(entity_id=manual_lock_entity["name"]) == "on"
                 and self.get_state(entity_id=manual_lock_entity["name"], attribute="running_handler") is not None
             ):
+                self.log(
+                    f"Manual lock already exists for cover {self.friendly_name(entity_id=entity).strip()}' ({entity}) "
+                    "- Resetting timer...",
+                    level="DEBUG",
+                )
                 self.reset_timer(
                     handle=self.get_state(entity_id=manual_lock_entity["name"], attribute="running_handler")
                 )
