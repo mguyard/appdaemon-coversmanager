@@ -1,3 +1,15 @@
+# [1.0.0-beta.3](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2024-05-12)
+
+
+### Bug Fixes
+
+* Add debug log for manual cover move detection ([a723cad](https://github.com/mguyard/appdaemon-coversmanager/commit/a723cad7860ba93cf9d48cd0e68cb70481b68ee0))
+
+
+### Features
+
+* Add locker binary sensor in global, opening and closing configuration ([b8fd489](https://github.com/mguyard/appdaemon-coversmanager/commit/b8fd48973f04877eac68c7342630cce8c399c572))
+
 # [1.0.0-beta.2](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2024-05-11)
 
 
