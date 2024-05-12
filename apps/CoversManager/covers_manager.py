@@ -172,6 +172,9 @@ class CoversManager(hass.Hass):
                             callback=self._callback_listenstate_manualmove_detection,
                             entity_id=cover,
                             attribute="current_position",
+                            new=lambda x, adaptive_position_entity=adaptive_position_entity: int(x)
+                            != self.get_state(entity_id=adaptive_position_entity["name"]),
+                            duration=30,
                             config=config,
                             adaptive_position_entity=adaptive_position_entity,
                         )
@@ -694,7 +697,7 @@ class CoversManager(hass.Hass):
                     )
                 self.run_in(
                     callback=self._callback_verify_cover_status,
-                    delay=30,
+                    delay=60,
                     cover=cover,
                     position_required=position_required,
                 )
@@ -745,7 +748,7 @@ class CoversManager(hass.Hass):
                 self.call_service("cover/set_cover_position", entity_id=covers, position=position)
                 for cover in covers:
                     self.run_in(
-                        callback=self._callback_verify_cover_status, delay=30, cover=cover, position_required=position
+                        callback=self._callback_verify_cover_status, delay=60, cover=cover, position_required=position
                     )
 
     def _callback_verify_cover_status(self, **kwargs: dict) -> None:
