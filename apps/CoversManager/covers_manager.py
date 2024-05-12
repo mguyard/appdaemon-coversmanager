@@ -908,6 +908,11 @@ class CoversManager(hass.Hass):
         if int(new) != int(self.get_state(entity_id=kwargs["adaptive_position_entity"]["name"])):
             lock_duration_minutes = int(kwargs["config"].common.manual.timer.total_seconds() / 60)
             self.log(
+                f"MANUAL MOVE DETECTED - New position is {new}% but "
+                f"adaptive position is {self.get_state(entity_id=kwargs['adaptive_position_entity']['name'])}%",
+                level="DEBUG",
+            )
+            self.log(
                 "MANUAL MOVE DETECTED - Blocking move of cover "
                 f"'{self.friendly_name(entity_id=entity).strip()}' ({entity}) "
                 f"for {lock_duration_minutes} minutes",
