@@ -18,25 +18,19 @@ class CoversManager(hass.Hass):
         config = None
         try:
             config = ConfigValidator.Config(**self.args["config"])
-        except ValidationError as e:
+        except ValidationError as err:
             self.stop_app(self.name)
-            self.log(e, level="ERROR")
-            # TODO : To enable for production
-            # raise RuntimeError(
-            #     "Invalid configuration. Please check the app logs for more information."
-            # )  # => To enable after dev
+            self.log(err, level="ERROR")
+            raise RuntimeError("Invalid configuration. Please check the app logs for more information.") from err
 
         if config is not None:
             self.dryrun = config.dryrun
             try:
                 self._verify_entities(config=config)
-            except RuntimeError as e:
+            except RuntimeError as err:
                 self.stop_app(self.name)
-                self.log(e, level="ERROR")
-                # TODO : To enable for production
-                # raise RuntimeError(
-                #     "Invalid configuration. Please check the app logs for more information."
-                # )  # => To enable after dev
+                self.log(err, level="ERROR")
+                raise RuntimeError("Invalid configuration. Please check the app logs for more information.") from err
 
             self.log(f"Configuration : {config.dict()}", level="DEBUG")
 
