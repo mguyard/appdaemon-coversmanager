@@ -21,6 +21,7 @@ class CoversManager(hass.Hass):
         except ValidationError as e:
             self.stop_app(self.name)
             self.log(e, level="ERROR")
+            # TODO : To enable for production
             # raise RuntimeError(
             #     "Invalid configuration. Please check the app logs for more information."
             # )  # => To enable after dev
@@ -32,6 +33,7 @@ class CoversManager(hass.Hass):
             except RuntimeError as e:
                 self.stop_app(self.name)
                 self.log(e, level="ERROR")
+                # TODO : To enable for production
                 # raise RuntimeError(
                 #     "Invalid configuration. Please check the app logs for more information."
                 # )  # => To enable after dev
@@ -39,46 +41,49 @@ class CoversManager(hass.Hass):
             self.log(f"Configuration : {config.dict()}", level="DEBUG")
 
             # Manage Opening
-            match config.common.opening.type:
-                case "time":
-                    self.run_daily(
-                        callback=self._callback_move_covers,
-                        start=config.common.opening.time,
-                        config=config,
-                        action="open",
-                    )
-                case "sunrise":
-                    self.log(f"Next sunrise : {self.sunrise()}", level="INFO")
-                    self.run_at_sunrise(callback=self._callback_move_covers, config=config, action="open")
-                case "lux":
-                    self.listen_state(
-                        callback=self._callback_listenstate_covers,
-                        entity_id=config.common.lux.sensor,
-                        new=lambda x: int(x) >= config.common.lux.open_lux,
-                        old=lambda x: int(x) < config.common.lux.open_lux,
-                        config=config,
-                        action="open",
-                    )
-                case "prefer-lux":
-                    self.preferlux_open_handler = self.run_daily(
-                        callback=self._callback_move_covers,
-                        start=config.common.opening.time,
-                        config=config,
-                        action="open",
-                    )
-                    self.listen_state(
-                        callback=self._callback_listenstate_covers,
-                        entity_id=config.common.lux.sensor,
-                        new=lambda x: int(x) >= config.common.lux.open_lux,
-                        old=lambda x: int(x) < config.common.lux.open_lux,
-                        config=config,
-                        action="open",
-                    )
-                case "off":
-                    self.log(
-                        "Opening is disabled by configuration (config.common.opening.type: off)",
-                        level="INFO",
-                    )
+            if not self._get_islocked(config=config, type="open"):
+                match config.common.opening.type:
+                    case "time":
+                        self.run_daily(
+                            callback=self._callback_move_covers,
+                            start=config.common.opening.time,
+                            config=config,
+                            action="open",
+                        )
+                    case "sunrise":
+                        self.log(f"Next sunrise : {self.sunrise()}", level="INFO")
+                        self.run_at_sunrise(callback=self._callback_move_covers, config=config, action="open")
+                    case "lux":
+                        self.listen_state(
+                            callback=self._callback_listenstate_covers,
+                            entity_id=config.common.lux.sensor,
+                            new=lambda x: int(x) >= config.common.lux.open_lux,
+                            old=lambda x: int(x) < config.common.lux.open_lux,
+                            config=config,
+                            action="open",
+                        )
+                    case "prefer-lux":
+                        self.preferlux_open_handler = self.run_daily(
+                            callback=self._callback_move_covers,
+                            start=config.common.opening.time,
+                            config=config,
+                            action="open",
+                        )
+                        self.listen_state(
+                            callback=self._callback_listenstate_covers,
+                            entity_id=config.common.lux.sensor,
+                            new=lambda x: int(x) >= config.common.lux.open_lux,
+                            old=lambda x: int(x) < config.common.lux.open_lux,
+                            config=config,
+                            action="open",
+                        )
+                    case "off":
+                        self.log(
+                            "Opening is disabled by configuration (config.common.opening.type: off)",
+                            level="INFO",
+                        )
+            else:
+                self.log("Opening is locked by locker entity (global or open locker)", level="INFO")
 
             # Manage Adaptive
             if config.common.closing.adaptive:
@@ -188,52 +193,55 @@ class CoversManager(hass.Hass):
                         )
 
             # Manage Closing
-            match config.common.closing.type:
-                case "time":
-                    self.run_daily(
-                        callback=self._callback_move_covers,
-                        start=config.common.closing.time,
-                        config=config,
-                        action="close",
-                    )
-                case "sunset":
-                    self.log(f"Next sunset : {self.sunset()}", level="INFO")
-                    self.run_at_sunset(callback=self._callback_move_covers, config=config, action="close")
-                case "lux":
-                    self.listen_state(
-                        callback=self._callback_listenstate_covers,
-                        entity_id=config.common.lux.sensor,
-                        new=lambda x: int(x) <= config.common.lux.close_lux,
-                        old=lambda x: int(x) > config.common.lux.close_lux,
-                        config=config,
-                        action="close",
-                    )
-                case "prefer-lux":
-                    # If prefer-lux is configured, we need to check if time or secure_sunset is configured
-                    if config.common.closing.secure_sunset:
-                        self.preferlux_close_handler = self.run_at_sunset(
-                            callback=self._callback_move_covers, config=config, action="close"
-                        )
-                    elif config.common.closing.time is not None:
-                        self.preferlux_close_handler = self.run_daily(
+            if not self._get_islocked(config=config, type="close"):
+                match config.common.closing.type:
+                    case "time":
+                        self.run_daily(
                             callback=self._callback_move_covers,
-                            entity_id=config.common.closing.time,
+                            start=config.common.closing.time,
                             config=config,
                             action="close",
                         )
-                    self.listen_state(
-                        callback=self._callback_listenstate_covers,
-                        entity_id=config.common.lux.sensor,
-                        new=lambda x: int(x) <= config.common.lux.close_lux,
-                        old=lambda x: int(x) > config.common.lux.close_lux,
-                        config=config,
-                        action="close",
-                    )
-                case "off":
-                    self.log(
-                        "Closing is disabled by configuration (config.common.closing.type: off)",
-                        level="INFO",
-                    )
+                    case "sunset":
+                        self.log(f"Next sunset : {self.sunset()}", level="INFO")
+                        self.run_at_sunset(callback=self._callback_move_covers, config=config, action="close")
+                    case "lux":
+                        self.listen_state(
+                            callback=self._callback_listenstate_covers,
+                            entity_id=config.common.lux.sensor,
+                            new=lambda x: int(x) <= config.common.lux.close_lux,
+                            old=lambda x: int(x) > config.common.lux.close_lux,
+                            config=config,
+                            action="close",
+                        )
+                    case "prefer-lux":
+                        # If prefer-lux is configured, we need to check if time or secure_sunset is configured
+                        if config.common.closing.secure_sunset:
+                            self.preferlux_close_handler = self.run_at_sunset(
+                                callback=self._callback_move_covers, config=config, action="close"
+                            )
+                        elif config.common.closing.time is not None:
+                            self.preferlux_close_handler = self.run_daily(
+                                callback=self._callback_move_covers,
+                                entity_id=config.common.closing.time,
+                                config=config,
+                                action="close",
+                            )
+                        self.listen_state(
+                            callback=self._callback_listenstate_covers,
+                            entity_id=config.common.lux.sensor,
+                            new=lambda x: int(x) <= config.common.lux.close_lux,
+                            old=lambda x: int(x) > config.common.lux.close_lux,
+                            config=config,
+                            action="close",
+                        )
+                    case "off":
+                        self.log(
+                            "Closing is disabled by configuration (config.common.closing.type: off)",
+                            level="INFO",
+                        )
+            else:
+                self.log("Closing is locked by locker entity (global or close locker)", level="INFO")
 
             # TODO : Create a method will look all sensors and check if create by AD-CoverManager
             #       if yes, look if it's an cover existing in configuration and if not, delete it.
@@ -261,14 +269,21 @@ class CoversManager(hass.Hass):
                 config.common.temperature.outdoor.sensor if config.common.temperature is not None else None
             ),
             "config.common.lux.sensor": (config.common.lux.sensor if config.common.lux is not None else None),
+            "config.common.locker": (config.common.locker if config.common.locker is not None else None),
+            "config.common.opening.locker": (
+                config.common.opening.locker if config.common.opening.locker is not None else None
+            ),
+            "config.common.closing.locker": (
+                config.common.closing.locker if config.common.closing.locker is not None else None
+            ),
         }
         # Add covers entities in list of entities to check
         for index, cover in enumerate(config.covers.dict().keys()):
-            # TODO : Verify if still needed as already checked in Pydantic
-            if not cover.startswith("cover."):
-                raise ValueError(
-                    f"Configured cover {cover} is not a valid cover entity. Please check your configuration"
-                )
+            # Verify if still needed as already checked in Pydantic
+            # if not cover.startswith("cover."):
+            #     raise ValueError(
+            #         f"Configured cover {cover} is not a valid cover entity. Please check your configuration"
+            #     )
             entities_dict[f"cover{index+1}"] = cover
 
         self.log(f"List all entities : {entities_dict}", level="DEBUG")
@@ -962,3 +977,50 @@ class CoversManager(hass.Hass):
         # Update the manual lock entity
         manual_lock_entity = self._get_manuallock_entity(cover=kwargs["cover"])
         self._create_update_covermanager_entity(entity=manual_lock_entity, state="off", running_handler=None)
+
+    def _get_islocked(self, config: ConfigValidator.Config, type: str) -> bool:
+        """
+        Check if the locker is locked for the specified type.
+
+        Args:
+            config (ConfigValidator.Config): The configuration object.
+            type (str): The type of locker to check. Must be either 'open' or 'close'.
+
+        Returns:
+            bool: True if the locker is locked for the specified type, False otherwise.
+        """
+        if type not in ["open", "close"]:
+            self.log(
+                f"Type {type} is not valid for locker verification. Only 'open' or 'close' are allowed. "
+                "Locker is disabled for this test",
+                level="ERROR",
+            )
+            return False
+
+        if config.common.locker is not None:
+            global_locker = True if self.get_state(entit_id=config.common.locker) == "on" else False
+        else:
+            global_locker = False
+
+        if config.common.opening.locker is not None:
+            opening_locker = True if self.get_state(entit_id=config.common.opening.locker) == "on" else False
+        else:
+            opening_locker = False
+
+        if config.common.closing.locker is not None:
+            closing_locker = True if self.get_state(entit_id=config.common.closing.locker) == "on" else False
+        else:
+            closing_locker = False
+
+        self.log(
+            f"Global Locker: {global_locker} - Opening Locker: {opening_locker} - Closing Locker: {closing_locker}",
+            level="DEBUG",
+        )
+
+        match type:
+            case "open":
+                return global_locker or opening_locker
+            case "close":
+                return global_locker or closing_locker
+            case _:
+                return False

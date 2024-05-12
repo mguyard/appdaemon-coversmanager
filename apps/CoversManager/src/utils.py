@@ -14,7 +14,7 @@ def isEntityFormat(value: str) -> str:
     Raises:
         ValueError: If the value is not in the correct format.
     """
-    if re.match(r"^[a-zA-Z]+\.\w+$", value) is None:
+    if re.match(r"^(([a-z_]+)\.([a-z0-9_]+))(\.(([a-z0-9_]+)(\[([a-z0-9_]+)\])?)+)?$", value) is None:
         raise ValueError("Value must be a valid HA sensor format")
     return value
 
@@ -69,3 +69,19 @@ def isSensorEntityFormat(value: str) -> str:
         ValueError: If the value is not in the correct format.
     """
     return isSpecificEntityFormat(value, "sensor")
+
+
+def isBinarySensorEntityFormat(value: str) -> str:
+    """
+    Checks if the given value is in the format of a Home Assistant binary sensor entity.
+
+    Args:
+        value (str): The value to be checked.
+
+    Returns:
+        str: The validated value.
+
+    Raises:
+        ValueError: If the value is not in the correct format.
+    """
+    return isSpecificEntityFormat(value, "binary_sensor")

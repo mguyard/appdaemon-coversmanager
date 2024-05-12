@@ -15,6 +15,7 @@ from typing_extensions import Annotated, Self
 import src.utils as Utils
 
 sensor_entity_format = Annotated[str, AfterValidator(Utils.isEntityFormat)]
+binary_sensor_entity_format = Annotated[str, AfterValidator(Utils.isBinarySensorEntityFormat)]
 time_ = time  # To resolve issue : https://github.com/pydantic/pydantic/discussions/9284
 
 
@@ -81,6 +82,7 @@ class ManualConfig(BaseModel):
 class OpeningConfig(BaseModel):
     type: Literal["off", "time", "sunrise", "lux", "prefer-lux"] = "off"
     time: time_ | None = None
+    locker: binary_sensor_entity_format | None = None
 
     @model_validator(mode="after")
     def checks(self) -> Self:
@@ -96,6 +98,7 @@ class ClosingConfig(BaseModel):
     time: time_ | None = None
     secure_sunset: bool = False
     adaptive: bool = False
+    locker: binary_sensor_entity_format | None = None
 
     @model_validator(mode="after")
     def checks(self) -> Self:
@@ -122,6 +125,7 @@ class CommonConfig(BaseModel):
     manual: ManualConfig = ManualConfig()
     temperature: TemperatureConfig | None = None
     lux: LuxConfig | None = None
+    locker: binary_sensor_entity_format | None = None
 
     @field_validator("position", mode="before")
     def position_none_default_values(cls, value):
