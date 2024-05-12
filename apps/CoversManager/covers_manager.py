@@ -18,72 +18,63 @@ class CoversManager(hass.Hass):
         config = None
         try:
             config = ConfigValidator.Config(**self.args["config"])
-        except ValidationError as e:
+        except ValidationError as err:
             self.stop_app(self.name)
-            self.log(e, level="ERROR")
-            # TODO : To enable for production
-            # raise RuntimeError(
-            #     "Invalid configuration. Please check the app logs for more information."
-            # )  # => To enable after dev
+            self.log(err, level="ERROR")
+            raise RuntimeError("Invalid configuration. Please check the app logs for more information.") from err
 
         if config is not None:
             self.dryrun = config.dryrun
             try:
                 self._verify_entities(config=config)
-            except RuntimeError as e:
+            except RuntimeError as err:
                 self.stop_app(self.name)
-                self.log(e, level="ERROR")
-                # TODO : To enable for production
-                # raise RuntimeError(
-                #     "Invalid configuration. Please check the app logs for more information."
-                # )  # => To enable after dev
+                self.log(err, level="ERROR")
+                raise RuntimeError("Invalid configuration. Please check the app logs for more information.") from err
 
             self.log(f"Configuration : {config.dict()}", level="DEBUG")
 
             # Manage Opening
-            if not self._get_islocked(config=config, type="open"):
-                match config.common.opening.type:
-                    case "time":
-                        self.run_daily(
-                            callback=self._callback_move_covers,
-                            start=config.common.opening.time,
-                            config=config,
-                            action="open",
-                        )
-                    case "sunrise":
-                        self.log(f"Next sunrise : {self.sunrise()}", level="INFO")
-                        self.run_at_sunrise(callback=self._callback_move_covers, config=config, action="open")
-                    case "lux":
-                        self.listen_state(
-                            callback=self._callback_listenstate_covers,
-                            entity_id=config.common.lux.sensor,
-                            new=lambda x: int(x) >= config.common.lux.open_lux,
-                            old=lambda x: int(x) < config.common.lux.open_lux,
-                            config=config,
-                            action="open",
-                        )
-                    case "prefer-lux":
-                        self.preferlux_open_handler = self.run_daily(
-                            callback=self._callback_move_covers,
-                            start=config.common.opening.time,
-                            config=config,
-                            action="open",
-                        )
-                        self.listen_state(
-                            callback=self._callback_listenstate_covers,
-                            entity_id=config.common.lux.sensor,
-                            new=lambda x: int(x) >= config.common.lux.open_lux,
-                            old=lambda x: int(x) < config.common.lux.open_lux,
-                            config=config,
-                            action="open",
-                        )
-                    case "off":
-                        self.log(
-                            "Opening is disabled by configuration (config.common.opening.type: off)",
-                            level="INFO",
-                        )
-            else:
-                self.log("Opening is locked by locker entity (global or open locker)", level="INFO")
+            match config.common.opening.type:
+                case "time":
+                    self.run_daily(
+                        callback=self._callback_move_covers,
+                        start=config.common.opening.time,
+                        config=config,
+                        action="open",
+                    )
+                case "sunrise":
+                    self.log(f"Next sunrise : {self.sunrise()}", level="INFO")
+                    self.run_at_sunrise(callback=self._callback_move_covers, config=config, action="open")
+                case "lux":
+                    self.listen_state(
+                        callback=self._callback_listenstate_covers,
+                        entity_id=config.common.lux.sensor,
+                        new=lambda x: int(x) >= config.common.lux.open_lux,
+                        old=lambda x: int(x) < config.common.lux.open_lux,
+                        config=config,
+                        action="open",
+                    )
+                case "prefer-lux":
+                    self.preferlux_open_handler = self.run_daily(
+                        callback=self._callback_move_covers,
+                        start=config.common.opening.time,
+                        config=config,
+                        action="open",
+                    )
+                    self.listen_state(
+                        callback=self._callback_listenstate_covers,
+                        entity_id=config.common.lux.sensor,
+                        new=lambda x: int(x) >= config.common.lux.open_lux,
+                        old=lambda x: int(x) < config.common.lux.open_lux,
+                        config=config,
+                        action="open",
+                    )
+                case "off":
+                    self.log(
+                        "Opening is disabled by configuration (config.common.opening.type: off)",
+                        level="INFO",
+                    )
 
             # Manage Adaptive
             if config.common.closing.adaptive:
@@ -181,6 +172,9 @@ class CoversManager(hass.Hass):
                             callback=self._callback_listenstate_manualmove_detection,
                             entity_id=cover,
                             attribute="current_position",
+                            new=lambda x, adaptive_position_entity=adaptive_position_entity: int(x)
+                            != self.get_state(entity_id=adaptive_position_entity["name"]),
+                            duration=30,
                             config=config,
                             adaptive_position_entity=adaptive_position_entity,
                         )
@@ -193,55 +187,52 @@ class CoversManager(hass.Hass):
                         )
 
             # Manage Closing
-            if not self._get_islocked(config=config, type="close"):
-                match config.common.closing.type:
-                    case "time":
-                        self.run_daily(
+            match config.common.closing.type:
+                case "time":
+                    self.run_daily(
+                        callback=self._callback_move_covers,
+                        start=config.common.closing.time,
+                        config=config,
+                        action="close",
+                    )
+                case "sunset":
+                    self.log(f"Next sunset : {self.sunset()}", level="INFO")
+                    self.run_at_sunset(callback=self._callback_move_covers, config=config, action="close")
+                case "lux":
+                    self.listen_state(
+                        callback=self._callback_listenstate_covers,
+                        entity_id=config.common.lux.sensor,
+                        new=lambda x: int(x) <= config.common.lux.close_lux,
+                        old=lambda x: int(x) > config.common.lux.close_lux,
+                        config=config,
+                        action="close",
+                    )
+                case "prefer-lux":
+                    # If prefer-lux is configured, we need to check if time or secure_sunset is configured
+                    if config.common.closing.secure_sunset:
+                        self.preferlux_close_handler = self.run_at_sunset(
+                            callback=self._callback_move_covers, config=config, action="close"
+                        )
+                    elif config.common.closing.time is not None:
+                        self.preferlux_close_handler = self.run_daily(
                             callback=self._callback_move_covers,
-                            start=config.common.closing.time,
+                            entity_id=config.common.closing.time,
                             config=config,
                             action="close",
                         )
-                    case "sunset":
-                        self.log(f"Next sunset : {self.sunset()}", level="INFO")
-                        self.run_at_sunset(callback=self._callback_move_covers, config=config, action="close")
-                    case "lux":
-                        self.listen_state(
-                            callback=self._callback_listenstate_covers,
-                            entity_id=config.common.lux.sensor,
-                            new=lambda x: int(x) <= config.common.lux.close_lux,
-                            old=lambda x: int(x) > config.common.lux.close_lux,
-                            config=config,
-                            action="close",
-                        )
-                    case "prefer-lux":
-                        # If prefer-lux is configured, we need to check if time or secure_sunset is configured
-                        if config.common.closing.secure_sunset:
-                            self.preferlux_close_handler = self.run_at_sunset(
-                                callback=self._callback_move_covers, config=config, action="close"
-                            )
-                        elif config.common.closing.time is not None:
-                            self.preferlux_close_handler = self.run_daily(
-                                callback=self._callback_move_covers,
-                                entity_id=config.common.closing.time,
-                                config=config,
-                                action="close",
-                            )
-                        self.listen_state(
-                            callback=self._callback_listenstate_covers,
-                            entity_id=config.common.lux.sensor,
-                            new=lambda x: int(x) <= config.common.lux.close_lux,
-                            old=lambda x: int(x) > config.common.lux.close_lux,
-                            config=config,
-                            action="close",
-                        )
-                    case "off":
-                        self.log(
-                            "Closing is disabled by configuration (config.common.closing.type: off)",
-                            level="INFO",
-                        )
-            else:
-                self.log("Closing is locked by locker entity (global or close locker)", level="INFO")
+                    self.listen_state(
+                        callback=self._callback_listenstate_covers,
+                        entity_id=config.common.lux.sensor,
+                        new=lambda x: int(x) <= config.common.lux.close_lux,
+                        old=lambda x: int(x) > config.common.lux.close_lux,
+                        config=config,
+                        action="close",
+                    )
+                case "off":
+                    self.log(
+                        "Closing is disabled by configuration (config.common.closing.type: off)",
+                        level="INFO",
+                    )
 
             # TODO : Create a method will look all sensors and check if create by AD-CoverManager
             #       if yes, look if it's an cover existing in configuration and if not, delete it.
@@ -315,42 +306,48 @@ class CoversManager(hass.Hass):
         Returns:
             None
         """
-        self.log(f"{kwargs['action'].capitalize()} callback triggered...", level="DEBUG")
-        covers_list = list(kwargs["config"].covers.dict().keys())  # List all configured covers
-        self.log(f"Covers list : {covers_list}", level="DEBUG")
-        try:
-            covers_to_move = self._get_action_coverlist(
-                covers_list=covers_list, action=kwargs["action"], config=kwargs["config"]
-            )
-        except ValueError as e:
-            self.log(e, level="ERROR")
-            return
-
-        if (kwargs["action"] == "open" and kwargs["config"].common.position.opened == 100) or (
-            kwargs["action"] == "close" and kwargs["config"].common.position.closed == 0
-        ):
-            if len(covers_to_move) > 0:
-                self.log(f"Covers list to {kwargs['action']} : {covers_to_move}", level="DEBUG")
-                try:
-                    self._set_openclose_cover_full(covers=covers_to_move, action=kwargs["action"])
-                except ValueError as e:
-                    self.log(e, level="ERROR")
-                    return
-        else:
-            covers_positional = self._get_positional_coverlist(covers_list=covers_to_move, config=kwargs["config"])
-            covers_unpositional = [value for value in covers_to_move if value not in covers_positional]
-            self.log(f"Positional Covers list to {kwargs['action']} : {covers_positional}", level="DEBUG")
-            self.log(f"Unpositional Covers list to {kwargs['action']} : {covers_unpositional}", level="DEBUG")
-            if len(covers_positional) > 0:
-                position_requested = (
-                    kwargs["config"].common.position.opened
-                    if kwargs["action"] == "open"
-                    else kwargs["config"].common.position.closed
+        if not self._get_islocked(config=kwargs["config"], action=kwargs["action"]):
+            self.log(f"{kwargs['action'].capitalize()} callback triggered...", level="DEBUG")
+            covers_list = list(kwargs["config"].covers.dict().keys())  # List all configured covers
+            self.log(f"Covers list : {covers_list}", level="DEBUG")
+            try:
+                covers_to_move = self._get_action_coverlist(
+                    covers_list=covers_list, action=kwargs["action"], config=kwargs["config"]
                 )
-                self._set_cover_position(covers=covers_positional, position=position_requested)
-            if len(covers_unpositional) > 0:
-                if kwargs["action"] == "open":
-                    self._set_openclose_cover_full(covers=covers_unpositional, action=kwargs["action"])
+            except ValueError as e:
+                self.log(e, level="ERROR")
+                return
+
+            if (kwargs["action"] == "open" and kwargs["config"].common.position.opened == 100) or (
+                kwargs["action"] == "close" and kwargs["config"].common.position.closed == 0
+            ):
+                if len(covers_to_move) > 0:
+                    self.log(f"Covers list to {kwargs['action']} : {covers_to_move}", level="DEBUG")
+                    try:
+                        self._set_openclose_cover_full(covers=covers_to_move, action=kwargs["action"])
+                    except ValueError as e:
+                        self.log(e, level="ERROR")
+                        return
+            else:
+                covers_positional = self._get_positional_coverlist(covers_list=covers_to_move, config=kwargs["config"])
+                covers_unpositional = [value for value in covers_to_move if value not in covers_positional]
+                self.log(f"Positional Covers list to {kwargs['action']} : {covers_positional}", level="DEBUG")
+                self.log(f"Unpositional Covers list to {kwargs['action']} : {covers_unpositional}", level="DEBUG")
+                if len(covers_positional) > 0:
+                    position_requested = (
+                        kwargs["config"].common.position.opened
+                        if kwargs["action"] == "open"
+                        else kwargs["config"].common.position.closed
+                    )
+                    self._set_cover_position(covers=covers_positional, position=position_requested)
+                if len(covers_unpositional) > 0:
+                    if kwargs["action"] == "open":
+                        self._set_openclose_cover_full(covers=covers_unpositional, action=kwargs["action"])
+        else:
+            self.log(
+                f"All covers are locked by configuration (global and/or {kwargs['action']}). No move allowed",
+                level="INFO",
+            )
 
     def _callback_listenstate_covers(self, entity: str, attribute: str, old: str, new: str, **kwargs: dict) -> None:
         """
@@ -366,8 +363,14 @@ class CoversManager(hass.Hass):
         Returns:
             None
         """
-        self.log(f"Callback triggered by state change of {entity} from {old} to {new}", level="DEBUG")
-        self._callback_move_covers(**kwargs)
+        if not self._get_islocked(config=kwargs["config"], action=kwargs["action"]):
+            self.log(f"Callback triggered by state change of {entity} from {old} to {new}", level="DEBUG")
+            self._callback_move_covers(**kwargs)
+        else:
+            self.log(
+                f"All covers are locked by configuration (global and/or {kwargs['action']}). No move allowed",
+                level="INFO",
+            )
 
     def _callback_listenstate_suninwindow(
         self, entity: str, attribute: str, old: str, new: str, **kwargs: dict
@@ -694,7 +697,7 @@ class CoversManager(hass.Hass):
                     )
                 self.run_in(
                     callback=self._callback_verify_cover_status,
-                    delay=30,
+                    delay=60,
                     cover=cover,
                     position_required=position_required,
                 )
@@ -745,7 +748,7 @@ class CoversManager(hass.Hass):
                 self.call_service("cover/set_cover_position", entity_id=covers, position=position)
                 for cover in covers:
                     self.run_in(
-                        callback=self._callback_verify_cover_status, delay=30, cover=cover, position_required=position
+                        callback=self._callback_verify_cover_status, delay=60, cover=cover, position_required=position
                     )
 
     def _callback_verify_cover_status(self, **kwargs: dict) -> None:
