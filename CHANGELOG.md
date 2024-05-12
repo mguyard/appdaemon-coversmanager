@@ -1,3 +1,12 @@
+# [1.0.0-beta.4](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2024-05-12)
+
+
+### Bug Fixes
+
+* Add adaptive position check for cover move detection + change in timer of move verification ([c17e03e](https://github.com/mguyard/appdaemon-coversmanager/commit/c17e03e22460cea8c8ac322b0b365abe35fd8fd5))
+* better implementation of locker verification ([f831094](https://github.com/mguyard/appdaemon-coversmanager/commit/f83109477b095905e03716cfe6a866f28c07845d))
+* Raise exception in case of invalid configuration ([589ab7d](https://github.com/mguyard/appdaemon-coversmanager/commit/589ab7de49f0fb295da63a742905d61a517954c2))
+
 # [1.0.0-beta.3](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2024-05-12)
 
 
