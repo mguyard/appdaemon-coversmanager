@@ -33,7 +33,7 @@
 > - [📍 Overview](#-overview)
 > - [📦 Features](#-features)
 > - [🚀 Getting Started](#-getting-started)
->   - [🔝 Requirements](#%EF%B8%8F-requirements)
+>   - [🔝 Requirements](#-requirements)
 >   - [⚙️ Installation](#️-installation)
 > - [🏷️ Configuration](#-configuration)
 >   - [🤖 AppDaemon](#-appdaemon)
@@ -335,8 +335,8 @@ Contributions are welcome! Here are several ways you can contribute:
 
 Once your PR is reviewed and approved, it will be merged into the dev branch.
 
+</details>
+
 > [!WARNING]
 >
 > Only PR to `dev` branch will be accepted.
-
-</details>
