@@ -50,8 +50,8 @@ class CoversManager(hass.Hass):
                     self.listen_state(
                         callback=self._callback_listenstate_covers,
                         entity_id=config.common.lux.sensor,
-                        new=lambda x: int(x) >= config.common.lux.open_lux,
-                        old=lambda x: int(x) < config.common.lux.open_lux,
+                        new=lambda x: int(x) >= int(config.common.lux.open_lux),
+                        old=lambda x: int(x) < int(config.common.lux.open_lux),
                         config=config,
                         action="open",
                     )
@@ -65,8 +65,8 @@ class CoversManager(hass.Hass):
                     self.listen_state(
                         callback=self._callback_listenstate_covers,
                         entity_id=config.common.lux.sensor,
-                        new=lambda x: int(x) >= config.common.lux.open_lux,
-                        old=lambda x: int(x) < config.common.lux.open_lux,
+                        new=lambda x: int(x) >= int(config.common.lux.open_lux),
+                        old=lambda x: int(x) < int(config.common.lux.open_lux),
                         config=config,
                         action="open",
                     )
@@ -324,7 +324,7 @@ class CoversManager(hass.Hass):
                 if len(covers_to_move) > 0:
                     self.log(f"Covers list to {kwargs['action']} : {covers_to_move}", level="DEBUG")
                     try:
-                        self._set_openclose_cover_full(covers=covers_to_move, action=kwargs["action"])
+                        self._set_openclose_cover_full(covers=covers_to_move, action=kwargs["action"], adaptive=True)
                     except ValueError as e:
                         self.log(e, level="ERROR")
                         return
@@ -410,7 +410,7 @@ class CoversManager(hass.Hass):
         # Check if the indoor temperature is lower or equal than the indoor setpoint
         if indoor_temperature <= int(kwargs["config"].common.temperature.indoor.setpoint):
             self.log(
-                f"Indoor temperature ({indoor_temperature}) < "
+                f"Indoor temperature ({indoor_temperature}) <= "
                 f"{kwargs['config'].common.temperature.indoor.setpoint} "
                 f"- Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
                 "need to be open to heat the room",
@@ -427,7 +427,7 @@ class CoversManager(hass.Hass):
                 level="DEBUG",
             )
             # Check if the last changed time is greater than the minimum time change
-            last_changed_seconds = round(self.get_entity(entity_id=kwargs["cover"]).last_changed_seconds)
+            last_changed_seconds = round(self.get_entity(entity=kwargs["cover"]).last_changed_seconds)
             self.log(
                 f"Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
                 f"last changed was {round(last_changed_seconds /60)} minutes ago",
@@ -685,22 +685,24 @@ class CoversManager(hass.Hass):
                 level="INFO",
             )
         else:
-            self.log(f"{action.capitalize()} cover {covers} to {position_required}% ...", level="INFO")
-            if action == "open":
-                self.call_service("cover/open_cover", entity_id=covers)
-            elif action == "close":
-                self.call_service("cover/close_cover", entity_id=covers)
-            for cover in covers:
-                if adaptive:
-                    self._create_update_covermanager_entity(
-                        entity=self._get_adaptive_entity(cover), state=position_required
+            if len(covers) > 0:
+                self.log(f"{action.capitalize()} cover {covers} to {position_required}% ...", level="INFO")
+                for cover in covers:
+                    if adaptive:
+                        self._create_update_covermanager_entity(
+                            entity=self._get_adaptive_entity(cover), state=position_required
+                        )
+                if action == "open":
+                    self.call_service("cover/open_cover", entity_id=covers)
+                elif action == "close":
+                    self.call_service("cover/close_cover", entity_id=covers)
+                for cover in covers:
+                    self.run_in(
+                        callback=self._callback_verify_cover_status,
+                        delay=60,
+                        cover=cover,
+                        position_required=position_required,
                     )
-                self.run_in(
-                    callback=self._callback_verify_cover_status,
-                    delay=60,
-                    cover=cover,
-                    position_required=position_required,
-                )
 
     def _set_cover_position(self, covers: list, position: int, adaptive: bool = False) -> None:
         """
@@ -981,49 +983,56 @@ class CoversManager(hass.Hass):
         manual_lock_entity = self._get_manuallock_entity(cover=kwargs["cover"])
         self._create_update_covermanager_entity(entity=manual_lock_entity, state="off", running_handler=None)
 
-    def _get_islocked(self, config: ConfigValidator.Config, type: str) -> bool:
+    def _get_islocked(self, config: ConfigValidator.Config, action: str) -> bool:
         """
         Check if the locker is locked for the specified type.
 
         Args:
             config (ConfigValidator.Config): The configuration object.
-            type (str): The type of locker to check. Must be either 'open' or 'close'.
+            action (str): The type of locker to check. Must be either 'open' or 'close'.
 
         Returns:
             bool: True if the locker is locked for the specified type, False otherwise.
         """
-        if type not in ["open", "close"]:
+        if action not in ["open", "close"]:
             self.log(
-                f"Type {type} is not valid for locker verification. Only 'open' or 'close' are allowed. "
-                "Locker is disabled for this test",
+                f"Action {action} is not valid for locker verification. Only 'open' or 'close' are allowed. "
+                "Locker is disabled for this time",
                 level="ERROR",
             )
             return False
 
         if config.common.locker is not None:
-            global_locker = True if self.get_state(entit_id=config.common.locker) == "on" else False
+            global_locker = True if self.get_state(entity_id=config.common.locker) == "on" else False
         else:
             global_locker = False
 
         if config.common.opening.locker is not None:
-            opening_locker = True if self.get_state(entit_id=config.common.opening.locker) == "on" else False
+            opening_locker = True if self.get_state(entity_id=config.common.opening.locker) == "on" else False
         else:
             opening_locker = False
 
         if config.common.closing.locker is not None:
-            closing_locker = True if self.get_state(entit_id=config.common.closing.locker) == "on" else False
+            closing_locker = True if self.get_state(entity_id=config.common.closing.locker) == "on" else False
         else:
             closing_locker = False
 
         self.log(
-            f"Global Locker: {global_locker} - Opening Locker: {opening_locker} - Closing Locker: {closing_locker}",
+            f"Action : {action} - Global Locker: {global_locker} "
+            f"- Opening Locker: {opening_locker} - Closing Locker: {closing_locker}",
             level="DEBUG",
         )
 
-        match type:
+        match action:
             case "open":
-                return global_locker or opening_locker
+                decision = global_locker or opening_locker
+                return decision
             case "close":
-                return global_locker or closing_locker
+                decision = global_locker or closing_locker
+                return decision
             case _:
+                self.log(
+                    f"Action {action} is not valid for locker verification. Returning unlocked...",
+                    level="ERROR",
+                )
                 return False
