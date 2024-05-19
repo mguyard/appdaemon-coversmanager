@@ -56,7 +56,7 @@ Overall, the objective of the Covers Manager project is to simplify and optimize
 > [!NOTE]
 >
 > It's important to note that the Covers Manager project is under development.
-> Project is open-source, and users are encouraged to adapt it to their own needs if necessary and purpose all evolutions by submitting a PR.
+> Project is open-source, and users are encouraged to adapt it to their own needs if necessary and purpose all evolutions by [submitting a PR]((#-contributing)).
 
 
 ### Motivation
