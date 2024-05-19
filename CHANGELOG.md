@@ -1,3 +1,10 @@
+# [1.0.0-beta.6](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.0.0-beta.5...v1.0.0-beta.6) (2024-05-19)
+
+
+### Features
+
+* Open covers if outdoor temperature is less than indoor temperature ([7c6f9ba](https://github.com/mguyard/appdaemon-coversmanager/commit/7c6f9ba1667509f60bf8a256869d718dd3b12b68))
+
 # [1.0.0-beta.5](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2024-05-19)
 
 
