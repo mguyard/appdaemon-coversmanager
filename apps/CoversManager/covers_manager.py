@@ -1,5 +1,5 @@
-from datetime import datetime
 import math as Math
+from datetime import datetime
 
 import hassapi as hass
 import src.config_validator as ConfigValidator
