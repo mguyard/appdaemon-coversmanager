@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mguyard/appdaemon-coversmanager/dev/CoversManager-Logo.png" width="400" />
+  <img src="https://raw.githubusercontent.com/mguyard/appdaemon-coversmanager/main/CoversManager-Logo.png" width="400" />
 </p>
 <p align="center">
     <h1 align="center">AppDaemon - Covers Manager</h1>
