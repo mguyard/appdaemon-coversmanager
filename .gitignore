@@ -161,3 +161,6 @@ cython_debug/
 
 # AppDaemon Config
 apps/apps.yaml
+
+# Changelog
+CHANGELOG.md
