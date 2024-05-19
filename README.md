@@ -197,7 +197,7 @@ Please find below all configuration parameters who don't apply to covers directl
 | closing             | type             | Define method to open covers the morning (Allowed value : off|time|sunrise|lux|prefer-lux)                                          | config.common.closing.type                         | off     | String               | Optional |
 | closing             | time             | Time to open covers - Only work with time or prefer-lux type                                                                        | config.common.closing.time                         | None    | Time                 | Optional |
 | closing             | locker           | A binary sensor who block opening when state is On                                                                                  | config.common.closing.locker                       | None    | Binary Sensor Entity | Optional |
-| closing             | secure_sunset    | Close at sunset in 2 layer if first closing method failed - Only work with time or prefer-lux type                                  | config.common.closing.secure_sunset                | False   | Boolean              | Optional |
+| closing             | secure_dusk      | Close at dusk in 2 layer if first closing method failed - Only work with time or prefer-lux type                                    | config.common.closing.secure_dusk                  | False   | Boolean              | Optional |
 | closing             | adaptive         | Enable adaptive mode who close/open covers based on Sun position and indoor/outdoor temperature                                     | config.common.closing.adaptive                     | False   | Boolean              | Optional |
 | manual              | allow            | Enable or Disable detection of manual position change of covers                                                                     | config.common.manual.allow                         | False   | Boolean              | Optional |
 | manual              | timer            | Time to block movements when manual position change is detected. Required if config.common.manual.allow is True                     | config.common.manual.timer                         | None    | TimeDelta            | Optional |
@@ -247,9 +247,8 @@ CoversManager:
                 time: "10:00:00"
                 locker: "binary_sensor.locker_opening" # If at least one of opening and global locker are True, lock is True
             closing:
-                type: "off"
-                time: "23:00:00"
-                secure_sunset: False
+                type: "prefer-lux"
+                secure_dusk: True
                 adaptive: True
                 locker: "binary_sensor.locker_closing" # If at least one of closing and global locker are True, lock is True
             manual:
