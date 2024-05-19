@@ -1,3 +1,10 @@
+# [1.0.0-beta.5](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2024-05-19)
+
+
+### Bug Fixes
+
+* Improved cover lock management and entity verification ([c6954e0](https://github.com/mguyard/appdaemon-coversmanager/commit/c6954e04bd0fe9e6d13367555f770ba9748e6032))
+
 # [1.0.0-beta.4](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2024-05-12)
 
 
