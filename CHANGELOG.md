@@ -1,3 +1,10 @@
+# [1.2.0-beta.1](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.1.0...v1.2.0-beta.1) (2024-05-19)
+
+
+### Features
+
+* Switch from secure_sunset to secure_dusk [#25](https://github.com/mguyard/appdaemon-coversmanager/issues/25) ([3a28bbb](https://github.com/mguyard/appdaemon-coversmanager/commit/3a28bbb6a409a7aca31247d6b22f75228684b579))
+
 # [1.1.0](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.0.0...v1.1.0) (2024-05-19)
 
 
