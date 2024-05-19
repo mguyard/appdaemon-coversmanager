@@ -96,7 +96,7 @@ class OpeningConfig(BaseModel):
 class ClosingConfig(BaseModel):
     type: Literal["off", "time", "sunset", "lux", "prefer-lux"] = "off"
     time: time_ | None = None
-    secure_sunset: bool = False
+    secure_dusk: bool = False
     adaptive: bool = False
     locker: binary_sensor_entity_format | None = None
 
@@ -104,15 +104,15 @@ class ClosingConfig(BaseModel):
     def checks(self) -> Self:
         if self.type == "time" and self.time is None:
             raise ValueError("Time configuration (config.common.closing.time) must be defined when type is time")
-        if self.type == "prefer-lux" and (self.time is None and self.secure_sunset is False):
+        if self.type == "prefer-lux" and (self.time is None and self.secure_dusk is False):
             raise ValueError(
-                "Time (config.common.closing.time) or secure_sunset (config.common.closing.secure_sunset) "
+                "Time (config.common.closing.time) or secure_dusk (config.common.closing.secure_dusk) "
                 "configuration must be defined when type is prefer-lux"
             )
-        if self.type in ["time", "prefer-lux"] and (self.time is not None and self.secure_sunset is True):
+        if self.type in ["time", "prefer-lux"] and (self.time is not None and self.secure_dusk is True):
             raise ValueError(
                 "Only one of time (config.common.closing.time) or "
-                "secure_sunset (config.common.closing.secure_sunset) configuration must be defined"
+                "secure_dusk (config.common.closing.secure_dusk) configuration must be defined"
             )
         return self
 

@@ -1,3 +1,4 @@
+from datetime import datetime
 import math as Math
 
 import hassapi as hass
@@ -208,10 +209,17 @@ class CoversManager(hass.Hass):
                         action="close",
                     )
                 case "prefer-lux":
-                    # If prefer-lux is configured, we need to check if time or secure_sunset is configured
-                    if config.common.closing.secure_sunset:
-                        self.preferlux_close_handler = self.run_at_sunset(
-                            callback=self._callback_move_covers, config=config, action="close"
+                    # If prefer-lux is configured, we need to check if time or secure_dusk is configured
+                    if config.common.closing.secure_dusk:
+                        self.preferlux_close_handler = self.run_daily(
+                            callback=self._callback_move_covers,
+                            start=datetime.strptime(
+                                self.get_state("sun.sun", attribute="next_dusk"), "%Y-%m-%dT%H:%M:%S.%f%z"
+                            )
+                            .astimezone()
+                            .time(),
+                            config=config,
+                            action="close",
                         )
                     elif config.common.closing.time is not None:
                         self.preferlux_close_handler = self.run_daily(
