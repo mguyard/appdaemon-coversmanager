@@ -475,9 +475,18 @@ class CoversManager(hass.Hass):
                     f"{kwargs['config'].common.temperature.outdoor.high_temperature} "
                     f"- Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
                     "need to be close to avoid the heat",
-                    level="DEBUG",
+                    level="INFO",
                 )
                 position = 0
+            # Check if the outdoor temperature is lower than the indoor temperature
+            if outdoor_temperature < indoor_temperature:
+                self.log(
+                    f"Outdoor temperature ({outdoor_temperature}) < Indoor temperature ({indoor_temperature}) "
+                    f"- Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
+                    "will be open",
+                    level="INFO",
+                )
+                position = 100
 
         # Check if the position is defined
         if position is not None:
