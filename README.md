@@ -32,6 +32,7 @@
 
 > - [📍 Overview](#-overview)
 > - [📦 Features](#-features)
+> - [❔ How this works](#-how-this-works)
 > - [🚀 Getting Started](#-getting-started)
 >   - [🔝 Requirements](#-requirements)
 >   - [⚙️ Installation](#️-installation)
@@ -76,6 +77,52 @@ CoversManager is developped to help you with these features :
 - Adaptive covers management based on sun position, indoor and outdoor temperature (optional)
 - Block adaptive changes when manual position change is detected
 
+## ❔ How this works
+
+CoversManager works in 3 modes :
+- Opening (who manage covers opening - most of the time the morning)
+- Closing (who manage covers closing - most of the time the evening)
+- Adaptive (open or close covers fully or partially depending of sun position and indoor/outdoor temperature)
+
+### Opening
+
+In your configuration, you can define one of the multiple type of opening supported.
+- Off (you don't want CoversManager manage your opening)
+- Time (you define at which time CoversManager will open your covers)
+- Sunrise (your covers will open at sunrise time - calculated internaly by AppDaemon)
+- Lux (you define a minimal lux to open covers)
+- Prefer-Lux (it's a combinaison of lux and custom time - useful in case of issue with your lux sensor, custom time will be your backup)
+
+> [!WARNING]
+>
+> When using prefer-lux, you need to configure a time that will be later than the possible time where required lux will be triggered. Otherwise, opening will be used based on time as it will be the first triggered.
+
+### Closing
+
+In your configuration, you can define one of the multiple type of opening supported.
+- Off (you don't want CoversManager manage your opening)
+- Time (you define at which time CoversManager will open your covers)
+- Sunset (your covers will open at sunset time - calculated internaly by AppDaemon)
+- Lux (you define a minimal lux to open covers)
+- Prefer-Lux (it's a combinaison of lux and custom time or dusk - useful in case of issue with your lux sensor, custom time or dusk will be your backup)
+
+> [!WARNING]
+>
+> When using prefer-lux, you need to configure a time that will be later than the possible time where required lux will be triggered. Otherwise, closing will be used based on time as it will be the first triggered.
+
+### Adaptive
+
+When adaptive mode is enable, each time the sun position change (based on sun.sun/azimuth), if sun is in window, CoversManager define the better cover position to :
+- let in the sun (if indoor temperature is less than the setpoint defined or outdoor temperature is less than indoor temperature) - Open 100%
+- keep the sun out but not the light (if indoor temperature is greater than the setpoint defined) - Partially open calculated with sun position and window parameters
+- keep the sun out (if outdoor temperature is greater than outdoor high temperature defined) - Close 100%
+
+> [!NOTE]
+> 
+> To prevent covers from constantly moving as the sun does, there are two parameters (min_ratio_change and min_time_change) that define the minimum percent of position change to be executed, and the minimum time between two movements. Please look in [parameters](#-parameters) to know defaults values.
+> 
+> If manual configuration is enabled, each time you move manually a cover (not by CoversManager), Adaptive mode is disable for the time configured.
+
 ## 🚀 Getting Started
 
 ### 🔝 Requirements
@@ -102,7 +149,7 @@ Firstly you need to configure your newly AppDaemon installation.
 
 [AppDaemon Main configuration](https://appdaemon.readthedocs.io/en/latest/CONFIGURE.html#appdaemon) is available in file `appdaemon.yaml` most of the time stored in `/add_config/<guid>_appdaemon/`
 
-Please find below an example of basic configuration :
+Please find below an example of basic configuration (It may need to be adapted to suit your configuration) :
 
 ```yaml
 ---
@@ -138,6 +185,14 @@ logs:
         filename: /conf/logs/CoversManager.log
 ```
 
+### AppDaemon dependancies
+
+You need to add a python package to AppDaemon for this application to work.
+To do this, go to your AppDaemon add-on configuration and add `pydantic` in the `package python` field.
+`pydantic` should appear as a tag above the `package python` field.
+
+[![Open your Home Assistant instance and show the dashboard of an add-on.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_appdaemon)
+
 ### 🪟 Covers Manager
 
 To configure Covers Manager app you need to edit `apps.yaml` configuration most of the time stored in `/add_config/<guid>_appdaemon/apps/`
@@ -163,7 +218,7 @@ CoversManager:
                     setpoint: 23
                 outdoor:
                     sensor: "sensor.outdoor_temperature"
-                    high_temperature: 40
+                    high_temperature: 28
             lux:
                 sensor: "sensor.outdoor_sensor_illuminance_lux"
                 open_lux: 23
@@ -260,7 +315,7 @@ CoversManager:
                     setpoint: 23
                 outdoor:
                     sensor: "sensor.outdoor_sensor_temperature"
-                    high_temperature: 40
+                    high_temperature: 28
             lux:
                 sensor: "sensor.outdoor_sensor_illuminance_lux"
                 open_lux: 23
