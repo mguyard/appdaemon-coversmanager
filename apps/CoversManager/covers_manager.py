@@ -1,4 +1,5 @@
 import math as Math
+from datetime import datetime
 
 import hassapi as hass
 import src.config_validator as ConfigValidator
@@ -132,38 +133,29 @@ class CoversManager(hass.Hass):
                             f"Azimuth left : {azimuth_left} - Azimuth right : {azimuth_right}",
                             level="DEBUG",
                         )
-                        sun_elevation = self.get_state(entity_id="sun.sun", attribute="elevation")
-                        # Listen for azimuth change if sun is in the window and sun elevation is positive
-                        # TODO : Verifier si il prend vraiment en compte l'elevation du soleil dans les conditions
-                        #          Ou bien si il prend l'information au moment du chargement de l'application
+                        # Listen for azimuth change if sun is in the window
                         self.listen_state(
                             callback=self._callback_listenstate_suninwindow,
                             entity_id="sun.sun",
                             attribute="azimuth",
-                            new=lambda sunazimuth,
-                            azimuth_left=azimuth_left,
-                            azimuth_right=azimuth_right,
-                            sun_elevation=sun_elevation: (int(sunazimuth) >= azimuth_left)
-                            and (int(sunazimuth) <= azimuth_right)
-                            and (sun_elevation > 0),
+                            new=lambda sunazimuth, azimuth_left=azimuth_left, azimuth_right=azimuth_right: (
+                                int(sunazimuth) >= azimuth_left
+                            )
+                            and (int(sunazimuth) <= azimuth_right),
                             config=config,
                             cover=cover,
                             azimuth_left=azimuth_left,
                             azimuth_right=azimuth_right,
                         )
                         # Listen for azimuth change if sun is leaving the window
-                        # TODO : Verifier si il prend vraiment en compte l'elevation du soleil dans les conditions
-                        #          Ou bien si il prend l'information au moment du chargement de l'application
                         self.listen_state(
                             callback=self._callback_listenstate_sunleavewindow,
                             entity_id="sun.sun",
                             attribute="azimuth",
-                            old=lambda sunazimuth,
-                            azimuth_left=azimuth_left,
-                            azimuth_right=azimuth_right,
-                            sun_elevation=sun_elevation: (int(sunazimuth) >= azimuth_left)
-                            and (int(sunazimuth) <= azimuth_right)
-                            and (sun_elevation > 0),
+                            old=lambda sunazimuth, azimuth_left=azimuth_left, azimuth_right=azimuth_right: (
+                                int(sunazimuth) >= azimuth_left
+                            )
+                            and (int(sunazimuth) <= azimuth_right),
                             new=lambda sunazimuth, azimuth_right=azimuth_right: int(sunazimuth) > azimuth_right,
                             cover=cover,
                         )
@@ -208,10 +200,17 @@ class CoversManager(hass.Hass):
                         action="close",
                     )
                 case "prefer-lux":
-                    # If prefer-lux is configured, we need to check if time or secure_sunset is configured
-                    if config.common.closing.secure_sunset:
-                        self.preferlux_close_handler = self.run_at_sunset(
-                            callback=self._callback_move_covers, config=config, action="close"
+                    # If prefer-lux is configured, we need to check if time or secure_dusk is configured
+                    if config.common.closing.secure_dusk:
+                        self.preferlux_close_handler = self.run_daily(
+                            callback=self._callback_move_covers,
+                            start=datetime.strptime(
+                                self.get_state("sun.sun", attribute="next_dusk"), "%Y-%m-%dT%H:%M:%S.%f%z"
+                            )
+                            .astimezone()
+                            .time(),
+                            config=config,
+                            action="close",
                         )
                     elif config.common.closing.time is not None:
                         self.preferlux_close_handler = self.run_daily(
@@ -233,10 +232,6 @@ class CoversManager(hass.Hass):
                         "Closing is disabled by configuration (config.common.closing.type: off)",
                         level="INFO",
                     )
-
-            # TODO : Create a method will look all sensors and check if create by AD-CoverManager
-            #       if yes, look if it's an cover existing in configuration and if not, delete it.
-            #       Objective : Clean entities for deleted covers in configuration
 
             self.log(f"{self.name} fully Initialized !", level="INFO")
 
@@ -280,7 +275,7 @@ class CoversManager(hass.Hass):
         self.log(f"List all entities : {entities_dict}", level="DEBUG")
         # Remove None entities
         entities = {k: v for k, v in entities_dict.items() if v is not None}
-        self.log(f"Filter all entities (excluding None) : {entities}", level="DEBUG")
+        self.log(f"List all entities filtered (None Excluded) : {entities}", level="DEBUG")
 
         # Check if entities exists
         for configKey, entity in entities.items():
@@ -393,6 +388,15 @@ class CoversManager(hass.Hass):
             None
         """
         self.log(f"Callback triggered by state change of {entity}/{attribute} from {old} to {new}", level="DEBUG")
+
+        # Check if the sun elevation is below or equal to horizon. If yes, disable adaptive mode
+        if float(self.get_state(entity_id="sun.sun", attribute="elevation")) <= 0:
+            self.log(
+                "Sun elevation is below or equal to horizon. Adaptive mode is actually disable "
+                f"for cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}'",
+                level="DEBUG",
+            )
+            return
 
         # Check if the sun is entering in the window
         if old is not None and old < kwargs["azimuth_left"]:
@@ -535,6 +539,16 @@ class CoversManager(hass.Hass):
             None
         """
         self.log(f"Callback triggered by state change of {entity}/{attribute} from {old} to {new}", level="DEBUG")
+
+        # Check if the sun elevation is below or equal to horizon. If yes, disable adaptive mode
+        if float(self.get_state(entity_id="sun.sun", attribute="elevation")) <= 0:
+            self.log(
+                "Sun elevation is below or equal to horizon. Adaptive mode is actually disable "
+                f"for cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}'",
+                level="DEBUG",
+            )
+            return
+
         self.log(
             "Sun have leaved the window of "
             f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
