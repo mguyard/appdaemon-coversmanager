@@ -773,16 +773,18 @@ class CoversManager(hass.Hass):
                     manual_lock_handle = self.get_state(
                         entity_id=manual_lock_entity["name"], attribute="running_handler"
                     )
-                    handler_end, _, _ = self.info_timer(handle=manual_lock_handle)
-                    self.log(
-                        f"Cover '{self.friendly_name(entity_id=cover).strip()}' ({cover}) "
-                        "is locked following a manual change. All move are blocked until manual lock "
-                        f"is released (end: {handler_end.strftime('%Y-%m-%d %H:%M:%S')})",
-                        level="INFO",
-                    )
-                    # If cover is locked, remove it from the list of covers to move
-                    covers.remove(cover)
-                    continue
+                    info_timer_result = self.info_timer(handle=manual_lock_handle)
+                    if info_timer_result is not None:
+                        handler_end, _, _ = info_timer_result
+                        self.log(
+                            f"Cover '{self.friendly_name(entity_id=cover).strip()}' ({cover}) "
+                            "is locked following a manual change. All move are blocked until manual lock "
+                            f"is released (end: {handler_end.strftime('%Y-%m-%d %H:%M:%S')})",
+                            level="INFO",
+                        )
+                        # If cover is locked, remove it from the list of covers to move
+                        covers.remove(cover)
+                        continue
 
                 if adaptive:
                     self.log(f"Updating state of adaptive entity for cover {cover} to {position}%", level="DEBUG")
