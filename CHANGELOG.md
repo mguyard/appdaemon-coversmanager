@@ -1,3 +1,17 @@
+# [1.2.0-beta.2](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.2.0-beta.1...v1.2.0-beta.2) (2024-05-24)
+
+
+### Bug Fixes
+
+* Issue [#27](https://github.com/mguyard/appdaemon-coversmanager/issues/27) with azimuth < 0 who still move adaptive ([9196d2d](https://github.com/mguyard/appdaemon-coversmanager/commit/9196d2d7edfaf3ceaf126ba9e9a04e31fb6454d3))
+
+# [1.2.0-beta.1](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.1.0...v1.2.0-beta.1) (2024-05-19)
+
+
+### Features
+
+* Switch from secure_sunset to secure_dusk [#25](https://github.com/mguyard/appdaemon-coversmanager/issues/25) ([3a28bbb](https://github.com/mguyard/appdaemon-coversmanager/commit/3a28bbb6a409a7aca31247d6b22f75228684b579))
+
 # [1.1.0](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.0.0...v1.1.0) (2024-05-19)
 
 
