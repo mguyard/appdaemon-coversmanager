@@ -155,6 +155,7 @@ Please find below an example of basic configuration (It may need to be adapted t
 ---
 secrets: /homeassistant/secrets.yaml
 appdaemon:
+  app_dir: /homeassistant/appdaemon/apps
   latitude: 48.80506979319244
   longitude: 2.12031248278925
   elevation: 130
@@ -175,15 +176,23 @@ logs:
     filename: /config/logs/error.log
 ```
 
-Add in logs part the log for Covers Manager :
+> [!WARNING]
+> 
+> Starting with the AppDaemon v0.15.0 addon, configuration of AppDaemon was moved to /addon_configs folder. But [HACS still continue to download AppDaemon apps to /config (old folder)](https://github.com/hacs/integration/issues/3408).
+> To resolve this, we add `app_dir` directive in `appdaemon:` section to use HACS supported folder.
+> If you already have existing apps not coming from HACS, __I recommend to upload manually iopool Pump Manager in your actual app_dir or copying all your existing app before modifying app_dir directive__.
+
+Create folder logs (if not already exist) in `/add_config/<guid>_appdaemon/` and add in `appdaemon.yaml` logs section, the log for Covers Manager :
 
 ```yaml
 logs:
     [...]
     CoversManager:
         name: CoversManager
-        filename: /conf/logs/CoversManager.log
+        filename: /config/logs/CoversManager.log
 ```
+
+Following the configuration change, you need to restart your AppDaemon addon.
 
 ### AppDaemon dependancies
 
@@ -259,6 +268,7 @@ Please find below all configuration parameters who don't apply to covers directl
 | temperature.indoor  | sensor           | Sensor who provide indoor temperature (Positive Integer - No Float)                                                                 | config.common.temperature.indoor.sensor            | None    | Sensor Entity        | Optional |
 | temperature.indoor  | setpoint         | Indoor temperature setpoint. Below => We need to heat with sun / Above => We need to block sun                                      | config.common.temperature.indoor.setpoint          | None    | PositiveInt          | Optional |
 | temperature.outdoor | sensor           | Sensor who provide outdoor temperature (Positive Integer - No Float)                                                                | config.common.temperature.outdoor.sensor           | None    | Sensor Entity        | Optional |
+| temperature.outdoor | low_temperature  | Outdoor temperature to trigger to enable adaptive mode in addition to indoor_temperature                                            | config.common.temperature.outdoor.low_temperature  | None    | PositiveInt          | Optional |
 | temperature.outdoor | high_temperature | Outdoor temperature to trigger when we need to totally close cover to protect from heat. Required when Outdoor sensor is configured | config.common.temperature.outdoor.high_temperature | None    | PositiveInt          | Optional |
 | lux                 | sensor           | Sensor who provide outside Lux                                                                                                      | config.common.lux.sensor                           | None    | Sensor Entity        | Optional |
 | lux                 | open_lux         | Trigger in lux to open covers. Required if type of opening is lux or prefer-lux                                                     | config.common.lux.open_lux                         | None    | PositiveInt          | Optional |
@@ -315,6 +325,7 @@ CoversManager:
                     setpoint: 23
                 outdoor:
                     sensor: "sensor.outdoor_sensor_temperature"
+                    low_temperature: 25
                     high_temperature: 28
             lux:
                 sensor: "sensor.outdoor_sensor_illuminance_lux"

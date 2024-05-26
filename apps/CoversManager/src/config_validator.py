@@ -28,6 +28,7 @@ class PositionConfig(BaseModel):
 
 class TemperatureOutdoorConfig(BaseModel):
     sensor: sensor_entity_format | None = None
+    low_temperature: PositiveInt | None = None
     high_temperature: PositiveInt | None = None
 
     @model_validator(mode="after")
