@@ -1,3 +1,27 @@
+# [1.3.0-beta.1](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.2.0...v1.3.0-beta.1) (2024-05-26)
+
+
+### Bug Fixes
+
+* Issue with unpacking during manual lock info_timer (when lock exist in entity but not the task, like following a app reload ([9a6a0fb](https://github.com/mguyard/appdaemon-coversmanager/commit/9a6a0fbb3c02895522b1847a13f6cab86d5f9cbe))
+
+
+### Features
+
+* Add config.temperature.outdoor.low_temperature as parameter ([47e784c](https://github.com/mguyard/appdaemon-coversmanager/commit/47e784ce618c160220063a1203fb18e672109d46))
+
+# [1.2.0-beta.3](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.2.0-beta.2...v1.2.0-beta.3) (2024-05-26)
+
+
+### Bug Fixes
+
+* Issue with unpacking during manual lock info_timer (when lock exist in entity but not the task, like following a app reload ([9a6a0fb](https://github.com/mguyard/appdaemon-coversmanager/commit/9a6a0fbb3c02895522b1847a13f6cab86d5f9cbe))
+
+
+### Features
+
+* Add config.temperature.outdoor.low_temperature as parameter ([47e784c](https://github.com/mguyard/appdaemon-coversmanager/commit/47e784ce618c160220063a1203fb18e672109d46))
+
 # [1.2.0](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.1.0...v1.2.0) (2024-05-24)
 
 

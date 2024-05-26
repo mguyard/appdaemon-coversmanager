@@ -265,11 +265,6 @@ class CoversManager(hass.Hass):
         }
         # Add covers entities in list of entities to check
         for index, cover in enumerate(config.covers.dict().keys()):
-            # Verify if still needed as already checked in Pydantic
-            # if not cover.startswith("cover."):
-            #     raise ValueError(
-            #         f"Configured cover {cover} is not a valid cover entity. Please check your configuration"
-            #     )
             entities_dict[f"cover{index+1}"] = cover
 
         self.log(f"List all entities : {entities_dict}", level="DEBUG")
@@ -423,13 +418,40 @@ class CoversManager(hass.Hass):
             position = 100
 
         # Check if the indoor temperature is greater than the indoor setpoint
-        if indoor_temperature > int(kwargs["config"].common.temperature.indoor.setpoint):
-            self.log(
-                f"Indoor temperature ({indoor_temperature}) is greater than "
-                f"{kwargs['config'].common.temperature.indoor.setpoint} - Adaptive mode will be used for cover "
-                f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
-                level="DEBUG",
+        # or if the outdoor temperature is higher or equal than the outdoor low temperature (if defined)
+        # but lower than the high temperature
+        if (
+            indoor_temperature > int(kwargs["config"].common.temperature.indoor.setpoint)
+            and kwargs["config"].common.temperature.outdoor.low_temperature is None
+        ) or (
+            indoor_temperature > int(kwargs["config"].common.temperature.indoor.setpoint)
+            and kwargs["config"].common.temperature.outdoor.sensor is not None
+            and (
+                outdoor_temperature >= int(kwargs["config"].common.temperature.outdoor.low_temperature)
+                and outdoor_temperature < int(kwargs["config"].common.temperature.outdoor.low_temperature)
             )
+        ):
+            if (
+                indoor_temperature > int(kwargs["config"].common.temperature.indoor.setpoint)
+                and kwargs["config"].common.temperature.outdoor.low_temperature is None
+            ):
+                self.log(
+                    f"Indoor temperature ({indoor_temperature}) is greater than "
+                    f"{kwargs['config'].common.temperature.indoor.setpoint} - Adaptive mode will be used for cover "
+                    f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
+                    level="INFO",
+                )
+            else:
+                self.log(
+                    f"Indoor temperature ({indoor_temperature}) is greater than "
+                    f"{kwargs['config'].common.temperature.indoor.setpoint} and outdoor temperature "
+                    f"({outdoor_temperature}) is between "
+                    f"{kwargs['config'].common.temperature.outdoor.low_temperature} and "
+                    f"{kwargs['config'].common.temperature.outdoor.high_temperature} - "
+                    "Adaptive mode will be used for cover "
+                    f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
+                    level="INFO",
+                )
             # Check if the last changed time is greater than the minimum time change
             last_changed_seconds = round(self.get_entity(entity=kwargs["cover"]).last_changed_seconds)
             self.log(
@@ -751,16 +773,18 @@ class CoversManager(hass.Hass):
                     manual_lock_handle = self.get_state(
                         entity_id=manual_lock_entity["name"], attribute="running_handler"
                     )
-                    handler_end, _, _ = self.info_timer(handle=manual_lock_handle)
-                    self.log(
-                        f"Cover '{self.friendly_name(entity_id=cover).strip()}' ({cover}) "
-                        "is locked following a manual change. All move are blocked until manual lock "
-                        f"is released (end: {handler_end.strftime('%Y-%m-%d %H:%M:%S')})",
-                        level="INFO",
-                    )
-                    # If cover is locked, remove it from the list of covers to move
-                    covers.remove(cover)
-                    continue
+                    info_timer_result = self.info_timer(handle=manual_lock_handle)
+                    if info_timer_result is not None:
+                        handler_end, _, _ = info_timer_result
+                        self.log(
+                            f"Cover '{self.friendly_name(entity_id=cover).strip()}' ({cover}) "
+                            "is locked following a manual change. All move are blocked until manual lock "
+                            f"is released (end: {handler_end.strftime('%Y-%m-%d %H:%M:%S')})",
+                            level="INFO",
+                        )
+                        # If cover is locked, remove it from the list of covers to move
+                        covers.remove(cover)
+                        continue
 
                 if adaptive:
                     self.log(f"Updating state of adaptive entity for cover {cover} to {position}%", level="DEBUG")
