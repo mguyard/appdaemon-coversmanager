@@ -2,8 +2,8 @@ import math as Math
 from datetime import datetime
 
 import hassapi as hass
-import src.config_validator as ConfigValidatorCM
 import src.constants as Constants
+import src.coversmanager_config_validator as ConfigValidatorCM
 from pydantic import ValidationError
 
 """
