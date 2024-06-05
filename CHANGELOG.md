@@ -1,3 +1,10 @@
+## [1.3.1-beta.2](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.3.1-beta.1...v1.3.1-beta.2) (2024-06-05)
+
+
+### Bug Fixes
+
+* Rename ConfigValidator to avoid collision with my others apps ([eaf0889](https://github.com/mguyard/appdaemon-coversmanager/commit/eaf08893f22a28a7485b6dd5a8440075ddbea4d6))
+
 ## [1.3.1-beta.1](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.3.0...v1.3.1-beta.1) (2024-06-05)
 
 
