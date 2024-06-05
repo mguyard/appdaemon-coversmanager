@@ -1,3 +1,12 @@
+## [1.3.1](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.3.0...v1.3.1) (2024-06-05)
+
+
+### Bug Fixes
+
+* Change module name to avoid collision with my others apps ([f29bc83](https://github.com/mguyard/appdaemon-coversmanager/commit/f29bc8399b3be08870542926a9ab3c19a28154cb))
+* Rename ConfigValidator to avoid collision with my others apps ([eaf0889](https://github.com/mguyard/appdaemon-coversmanager/commit/eaf08893f22a28a7485b6dd5a8440075ddbea4d6))
+* Rename ConfigValidator to avoid collision with my others apps ([460cd0f](https://github.com/mguyard/appdaemon-coversmanager/commit/460cd0f099e9a7e0c42c4b255b8cbdc544304319))
+
 ## [1.3.1-beta.3](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.3.1-beta.2...v1.3.1-beta.3) (2024-06-05)
 
 
