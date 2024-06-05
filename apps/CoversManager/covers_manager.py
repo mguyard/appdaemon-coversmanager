@@ -2,7 +2,7 @@ import math as Math
 from datetime import datetime
 
 import hassapi as hass
-import src.config_validator as ConfigValidator
+import src.config_validator as ConfigValidatorCM
 import src.constants as Constants
 from pydantic import ValidationError
 
@@ -18,7 +18,7 @@ class CoversManager(hass.Hass):
     def initialize(self):
         config = None
         try:
-            config = ConfigValidator.Config(**self.args["config"])
+            config = ConfigValidatorCM.Config(**self.args["config"])
         except ValidationError as err:
             self.stop_app(self.name)
             self.log(err, level="ERROR")
@@ -235,12 +235,12 @@ class CoversManager(hass.Hass):
 
             self.log(f"{self.name} fully Initialized !", level="INFO")
 
-    def _verify_entities(self, config: ConfigValidator.Config) -> None:
+    def _verify_entities(self, config: ConfigValidatorCM.Config) -> None:
         """
         Verify the entities defined in the configuration.
 
         Args:
-            config (ConfigValidator.Config): The configuration object.
+            config (ConfigValidatorCM.Config): The configuration object.
 
         Raises:
             ValueError: If a configured cover is not a valid cover entity.
@@ -377,7 +377,7 @@ class CoversManager(hass.Hass):
                 - azimuth_left (float): The azimuth value representing the left direction.
                 - azimuth_right (float): The azimuth value representing the right direction.
                 - cover (str): The cover entity.
-                - config (ConfigValidator.Config): The configuration data.
+                - config (ConfigValidatorCM.Config): The configuration data.
 
         Returns:
             None
@@ -578,14 +578,14 @@ class CoversManager(hass.Hass):
         )
         self._set_cover_position(covers=[kwargs["cover"]], position=100, adaptive=True)
 
-    def _get_calculated_adaptive(self, cover: str, sun_azimuth: str, config: ConfigValidator.Config) -> int:
+    def _get_calculated_adaptive(self, cover: str, sun_azimuth: str, config: ConfigValidatorCM.Config) -> int:
         """
         Calculates the position of the cover based on the sun azimuth and configuration.
 
         Args:
             cover (str): The name of the cover.
             sun_azimuth (int): The azimuth of the sun.
-            config (ConfigValidator.Config): The configuration object.
+            config (ConfigValidatorCM.Config): The configuration object.
 
         Returns:
             int: The position of the cover as a percentage.
@@ -615,14 +615,14 @@ class CoversManager(hass.Hass):
         )
         return cover_percent
 
-    def _get_action_coverlist(self, covers_list: list, action: str, config: ConfigValidator.Config) -> list:
+    def _get_action_coverlist(self, covers_list: list, action: str, config: ConfigValidatorCM.Config) -> list:
         """
         Get the list of covers to open/close.
 
         Args:
             covers_list (list): List of covers.
             action (str): Action to perform (open/close).
-            config (ConfigValidator.Config): Configuration object.
+            config (ConfigValidatorCM.Config): Configuration object.
 
         Returns:
             list: List of covers to move.
@@ -688,13 +688,13 @@ class CoversManager(hass.Hass):
                 covers_to_move.append(cover)
         return covers_to_move
 
-    def _get_positional_coverlist(self, covers_list: list, config: ConfigValidator.Config) -> list:
+    def _get_positional_coverlist(self, covers_list: list, config: ConfigValidatorCM.Config) -> list:
         """
         Returns a list of positional covers from the given covers_list based on the provided config.
 
         Args:
             covers_list (list): A list of covers.
-            config (ConfigValidator.Config): The configuration object.
+            config (ConfigValidatorCM.Config): The configuration object.
 
         Returns:
             list: A list of positional covers.
@@ -1030,12 +1030,12 @@ class CoversManager(hass.Hass):
         manual_lock_entity = self._get_manuallock_entity(cover=kwargs["cover"])
         self._create_update_covermanager_entity(entity=manual_lock_entity, state="off", running_handler=None)
 
-    def _get_islocked(self, config: ConfigValidator.Config, action: str) -> bool:
+    def _get_islocked(self, config: ConfigValidatorCM.Config, action: str) -> bool:
         """
         Check if the locker is locked for the specified type.
 
         Args:
-            config (ConfigValidator.Config): The configuration object.
+            config (ConfigValidatorCM.Config): The configuration object.
             action (str): The type of locker to check. Must be either 'open' or 'close'.
 
         Returns:
