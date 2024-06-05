@@ -1,9 +1,9 @@
 import math as Math
 from datetime import datetime
 
+import CoversManagerLibs.config_validator as ConfigValidator
+import CoversManagerLibs.constants as Constants
 import hassapi as hass
-import src.config_validator as ConfigValidator
-import src.constants as Constants
 from pydantic import ValidationError
 
 """

@@ -12,7 +12,7 @@ from pydantic import (
 from pydantic.functional_validators import AfterValidator
 from typing_extensions import Annotated, Self
 
-import src.utils as Utils
+import CoversManagerLibs.utils as Utils
 
 sensor_entity_format = Annotated[str, AfterValidator(Utils.isEntityFormat)]
 binary_sensor_entity_format = Annotated[str, AfterValidator(Utils.isBinarySensorEntityFormat)]
