@@ -1,3 +1,10 @@
+## [1.3.1-beta.3](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.3.1-beta.2...v1.3.1-beta.3) (2024-06-05)
+
+
+### Bug Fixes
+
+* Change module name to avoid collision with my others apps ([f29bc83](https://github.com/mguyard/appdaemon-coversmanager/commit/f29bc8399b3be08870542926a9ab3c19a28154cb))
+
 ## [1.3.1-beta.2](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.3.1-beta.1...v1.3.1-beta.2) (2024-06-05)
 
 
