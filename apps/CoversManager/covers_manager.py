@@ -354,7 +354,11 @@ class CoversManager(hass.Hass):
             None
         """
         if not self._get_islocked(config=kwargs["config"], action=kwargs["action"]):
-            self.log(f"Callback triggered by state change of {entity} from {old} to {new}", level="DEBUG")
+            self.log(
+                f"Action {kwargs["action"].upper()} - "
+                f"Callback triggered by state change of {entity} from {old} to {new}",
+                level="DEBUG",
+            )
             self._callback_move_covers(**kwargs)
         else:
             self.log(
@@ -382,7 +386,10 @@ class CoversManager(hass.Hass):
         Returns:
             None
         """
-        self.log(f"Callback triggered by state change of {entity}/{attribute} from {old} to {new}", level="DEBUG")
+        self.log(
+            f"SunInWindow - Callback triggered by state change of {entity}/{attribute} from {old} to {new}",
+            level="DEBUG",
+        )
 
         # Check if the sun elevation is below or equal to horizon. If yes, disable adaptive mode
         if float(self.get_state(entity_id="sun.sun", attribute="elevation")) <= 0:
@@ -560,7 +567,10 @@ class CoversManager(hass.Hass):
         Returns:
             None
         """
-        self.log(f"Callback triggered by state change of {entity}/{attribute} from {old} to {new}", level="DEBUG")
+        self.log(
+            f"SunLeaveWindow - Callback triggered by state change of {entity}/{attribute} from {old} to {new}",
+            level="DEBUG",
+        )
 
         # Check if the sun elevation is below or equal to horizon. If yes, disable adaptive mode
         if float(self.get_state(entity_id="sun.sun", attribute="elevation")) <= 0:
