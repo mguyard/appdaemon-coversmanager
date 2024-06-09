@@ -435,7 +435,7 @@ class CoversManager(hass.Hass):
             and kwargs["config"].common.temperature.outdoor.sensor is not None
             and (
                 outdoor_temperature >= int(kwargs["config"].common.temperature.outdoor.low_temperature)
-                and outdoor_temperature < int(kwargs["config"].common.temperature.outdoor.low_temperature)
+                and outdoor_temperature < int(kwargs["config"].common.temperature.outdoor.high_temperature)
             )
         ):
             if (
