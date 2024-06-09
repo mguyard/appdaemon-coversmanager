@@ -355,7 +355,7 @@ class CoversManager(hass.Hass):
         """
         if not self._get_islocked(config=kwargs["config"], action=kwargs["action"]):
             self.log(
-                f"Action {kwargs["action"].upper()} - "
+                f"Action {kwargs['action'].upper()} - "
                 f"Callback triggered by state change of {entity} from {old} to {new}",
                 level="DEBUG",
             )
