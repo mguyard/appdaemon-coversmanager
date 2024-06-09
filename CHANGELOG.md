@@ -1,3 +1,10 @@
+## [1.3.2-beta.2](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.3.2-beta.1...v1.3.2-beta.2) (2024-06-09)
+
+
+### Bug Fixes
+
+* Resolve critical issue in a log who block application loading ([820adf3](https://github.com/mguyard/appdaemon-coversmanager/commit/820adf377d602e7b33d4a6ee19ad37bb0c088b8c))
+
 ## [1.3.2-beta.1](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.3.1...v1.3.2-beta.1) (2024-06-09)
 
 
