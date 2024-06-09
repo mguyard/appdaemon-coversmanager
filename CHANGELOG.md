@@ -1,3 +1,11 @@
+## [1.3.2-beta.1](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.3.1...v1.3.2-beta.1) (2024-06-09)
+
+
+### Bug Fixes
+
+* Resolve issue with adaptive mode conditional for outdoor sensor ([9a462ff](https://github.com/mguyard/appdaemon-coversmanager/commit/9a462ff973eca04733198a6d5a2ccad02e07a126))
+* Update log message for state change callback to better understand which callback is trigger ([2e3246f](https://github.com/mguyard/appdaemon-coversmanager/commit/2e3246fcca29771f71b9e0ab183ee2d08f9b4369))
+
 ## [1.3.1](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.3.0...v1.3.1) (2024-06-05)
 
 
