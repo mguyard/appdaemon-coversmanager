@@ -1,3 +1,10 @@
+## [1.3.2-beta.3](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.3.2-beta.2...v1.3.2-beta.3) (2024-06-12)
+
+
+### Bug Fixes
+
+* Update lambda functions to handle non-integer values when HA return unknown (following start for example) ([c59eefc](https://github.com/mguyard/appdaemon-coversmanager/commit/c59eefc14c90506001ddc40d523b191aa190d563))
+
 ## [1.3.2-beta.2](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.3.2-beta.1...v1.3.2-beta.2) (2024-06-09)
 
 
