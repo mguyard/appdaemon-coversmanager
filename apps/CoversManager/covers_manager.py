@@ -165,7 +165,9 @@ class CoversManager(hass.Hass):
                             entity_id=cover,
                             attribute="current_position",
                             new=lambda x, adaptive_position_entity=adaptive_position_entity: int(x)
-                            != self.get_state(entity_id=adaptive_position_entity["name"]),
+                            != self.get_state(entity_id=adaptive_position_entity["name"])
+                            if x.isdigit()
+                            else False,
                             duration=30,
                             config=config,
                             adaptive_position_entity=adaptive_position_entity,
