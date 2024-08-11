@@ -1,3 +1,20 @@
+# [1.4.0](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.3.1...v1.4.0) (2024-08-11)
+
+
+### Bug Fixes
+
+* Resolve critical issue in a log who block application loading ([820adf3](https://github.com/mguyard/appdaemon-coversmanager/commit/820adf377d602e7b33d4a6ee19ad37bb0c088b8c))
+* Resolve issue with adaptive mode conditional for outdoor sensor ([9a462ff](https://github.com/mguyard/appdaemon-coversmanager/commit/9a462ff973eca04733198a6d5a2ccad02e07a126))
+* Update lambda functions to handle non-integer values when HA return None (following start for example) ([181b4b4](https://github.com/mguyard/appdaemon-coversmanager/commit/181b4b40553f6de2cf2e0efb4c5faf5b839ed2f7))
+* Update lambda functions to handle non-integer values when HA return unknown (following start for example) ([c59eefc](https://github.com/mguyard/appdaemon-coversmanager/commit/c59eefc14c90506001ddc40d523b191aa190d563))
+* Update lambda functions to handle non-integer values when HA returns None or unknown ([39043a2](https://github.com/mguyard/appdaemon-coversmanager/commit/39043a2510b822f83a7c91f6d134cb1505741e9c))
+* Update log message for state change callback to better understand which callback is trigger ([2e3246f](https://github.com/mguyard/appdaemon-coversmanager/commit/2e3246fcca29771f71b9e0ab183ee2d08f9b4369))
+
+
+### Features
+
+* Manage locker (global and close) for adaptive mode. ([5a45554](https://github.com/mguyard/appdaemon-coversmanager/commit/5a45554b2114b26a5223ed449c8c9565091c54e1))
+
 # [1.4.0-beta.1](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.3.2-beta.5...v1.4.0-beta.1) (2024-08-11)
 
 
