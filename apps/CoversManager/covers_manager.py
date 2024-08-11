@@ -388,169 +388,176 @@ class CoversManager(hass.Hass):
         Returns:
             None
         """
-        self.log(
-            f"SunInWindow - Callback triggered by state change of {entity}/{attribute} from {old} to {new}",
-            level="DEBUG",
-        )
-
-        # Check if the sun elevation is below or equal to horizon. If yes, disable adaptive mode
-        if float(self.get_state(entity_id="sun.sun", attribute="elevation")) <= 0:
+        if not self._get_islocked(config=kwargs["config"], action="adaptive"):
             self.log(
-                "Sun elevation is below or equal to horizon. Adaptive mode is actually disable "
-                f"for cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}'",
+                f"SunInWindow - Callback triggered by state change of {entity}/{attribute} from {old} to {new}",
                 level="DEBUG",
             )
-            return
 
-        # Check if the sun is entering in the window
-        if old is not None and old < kwargs["azimuth_left"]:
-            self.log(
-                "Sun has entered the window of "
-                f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
-                level="INFO",
-            )
-        position = None
-
-        # Get the current temperature (indoor and outdoor)
-        indoor_temperature = float(self.get_state(entity_id=kwargs["config"].common.temperature.indoor.sensor))
-        outdoor_temperature = float(self.get_state(entity_id=kwargs["config"].common.temperature.outdoor.sensor))
-
-        # Check if the indoor temperature is lower or equal than the indoor setpoint
-        if indoor_temperature <= int(kwargs["config"].common.temperature.indoor.setpoint):
-            self.log(
-                f"Indoor temperature ({indoor_temperature}) <= "
-                f"{kwargs['config'].common.temperature.indoor.setpoint} "
-                f"- Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
-                "need to be open to heat the room",
-                level="DEBUG",
-            )
-            position = 100
-
-        # Check if the indoor temperature is greater than the indoor setpoint
-        # or if the outdoor temperature is higher or equal than the outdoor low temperature (if defined)
-        # but lower than the high temperature
-        if (
-            indoor_temperature > int(kwargs["config"].common.temperature.indoor.setpoint)
-            and kwargs["config"].common.temperature.outdoor.low_temperature is None
-        ) or (
-            indoor_temperature > int(kwargs["config"].common.temperature.indoor.setpoint)
-            and kwargs["config"].common.temperature.outdoor.sensor is not None
-            and (
-                outdoor_temperature >= int(kwargs["config"].common.temperature.outdoor.low_temperature)
-                and outdoor_temperature < int(kwargs["config"].common.temperature.outdoor.high_temperature)
-            )
-        ):
-            if (
-                indoor_temperature > int(kwargs["config"].common.temperature.indoor.setpoint)
-                and kwargs["config"].common.temperature.outdoor.low_temperature is None
-            ):
+            # Check if the sun elevation is below or equal to horizon. If yes, disable adaptive mode
+            if float(self.get_state(entity_id="sun.sun", attribute="elevation")) <= 0:
                 self.log(
-                    f"Indoor temperature ({indoor_temperature}) is greater than "
-                    f"{kwargs['config'].common.temperature.indoor.setpoint} - Adaptive mode will be used for cover "
-                    f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
-                    level="INFO",
-                )
-            else:
-                self.log(
-                    f"Indoor temperature ({indoor_temperature}) is greater than "
-                    f"{kwargs['config'].common.temperature.indoor.setpoint} and outdoor temperature "
-                    f"({outdoor_temperature}) is between "
-                    f"{kwargs['config'].common.temperature.outdoor.low_temperature} and "
-                    f"{kwargs['config'].common.temperature.outdoor.high_temperature} - "
-                    "Adaptive mode will be used for cover "
-                    f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
-                    level="INFO",
-                )
-            # Check if the last changed time is greater than the minimum time change
-            last_changed_seconds = round(self.get_entity(entity=kwargs["cover"]).last_changed_seconds)
-            self.log(
-                f"Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
-                f"last changed was {round(last_changed_seconds /60)} minutes ago",
-                level="DEBUG",
-            )
-            if last_changed_seconds < (kwargs["config"].common.position.min_time_change * 60):
-                self.log(
-                    f"Last changed is lower than {kwargs['config'].common.position.min_time_change} minutes "
-                    f"(Actually : {round(last_changed_seconds / 60)}). Adaptive mode is not used this time "
-                    f"for cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
-                    level="INFO",
-                )
-                position = None  # Block change
-            else:
-                self.log(
-                    f"Last changed is greater than {kwargs['config'].common.position.min_time_change} minutes "
-                    "(common.position.min_time_change). Allowed to move cover "
-                    f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
+                    "Sun elevation is below or equal to horizon. Adaptive mode is actually disable "
+                    f"for cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}'",
                     level="DEBUG",
                 )
-                # Calculate the adaptive position with min_ratio_change
-                calculated_adaptive_position = (
-                    Math.floor(
-                        self._get_calculated_adaptive(cover=kwargs["cover"], sun_azimuth=new, config=kwargs["config"])
-                        / kwargs["config"].common.position.min_ratio_change
-                    )
-                    * kwargs["config"].common.position.min_ratio_change
-                )
-                self.log(
-                    f"Update adaptive position for cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' "
-                    f"({kwargs['cover']}) based on min_ratio_change : {calculated_adaptive_position}%",
-                    level="DEBUG",
-                )
-                position = calculated_adaptive_position
+                return
 
-        # Check if the outdoor temperature is defined and if the high temperature is defined
-        if (
-            kwargs["config"].common.temperature.outdoor.sensor is not None
-            and kwargs["config"].common.temperature.outdoor.high_temperature is not None
-        ):
-            # Check if the outdoor temperature is greater than the outdoor high temperature
-            if outdoor_temperature >= int(kwargs["config"].common.temperature.outdoor.high_temperature):
+            # Check if the sun is entering in the window
+            if old is not None and old < kwargs["azimuth_left"]:
                 self.log(
-                    f"Outdoor temperature ({outdoor_temperature}) > "
-                    f"{kwargs['config'].common.temperature.outdoor.high_temperature} "
-                    f"- Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
-                    "need to be close to avoid the heat",
+                    "Sun has entered the window of "
+                    f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
                     level="INFO",
                 )
-                position = 0
-            # Check if the outdoor temperature is lower than the indoor temperature
-            if outdoor_temperature < indoor_temperature:
+            position = None
+
+            # Get the current temperature (indoor and outdoor)
+            indoor_temperature = float(self.get_state(entity_id=kwargs["config"].common.temperature.indoor.sensor))
+            outdoor_temperature = float(self.get_state(entity_id=kwargs["config"].common.temperature.outdoor.sensor))
+
+            # Check if the indoor temperature is lower or equal than the indoor setpoint
+            if indoor_temperature <= int(kwargs["config"].common.temperature.indoor.setpoint):
                 self.log(
-                    f"Outdoor temperature ({outdoor_temperature}) < Indoor temperature ({indoor_temperature}) "
+                    f"Indoor temperature ({indoor_temperature}) <= "
+                    f"{kwargs['config'].common.temperature.indoor.setpoint} "
                     f"- Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
-                    "will be open",
-                    level="INFO",
+                    "need to be open to heat the room",
+                    level="DEBUG",
                 )
                 position = 100
 
-        # Check if the position is defined
-        if position is not None:
-            position = min(
-                max(kwargs["config"].common.position.closed, position), kwargs["config"].common.position.opened
-            )
-            self.log(
-                "Update adaptive position for Cover "
-                f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
-                "based on opened (config.common.position.opened) and "
-                f"closed configuration (config.common.position.closed) : {position}%",
-                level="DEBUG",
-            )
-            # TODO : Gerer aussi le mode manuel, uniquement quand on est en mode adaptatif
-            if self._get_cover_currentposition(cover=kwargs["cover"]) != position:
-                self.log(
-                    f"Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) is not "
-                    f"at the required position ({position}) "
-                    f"- Actual position : {self._get_cover_currentposition(cover=kwargs['cover'])}%",
-                    level="DEBUG",
+            # Check if the indoor temperature is greater than the indoor setpoint
+            # or if the outdoor temperature is higher or equal than the outdoor low temperature (if defined)
+            # but lower than the high temperature
+            if (
+                indoor_temperature > int(kwargs["config"].common.temperature.indoor.setpoint)
+                and kwargs["config"].common.temperature.outdoor.low_temperature is None
+            ) or (
+                indoor_temperature > int(kwargs["config"].common.temperature.indoor.setpoint)
+                and kwargs["config"].common.temperature.outdoor.sensor is not None
+                and (
+                    outdoor_temperature >= int(kwargs["config"].common.temperature.outdoor.low_temperature)
+                    and outdoor_temperature < int(kwargs["config"].common.temperature.outdoor.high_temperature)
                 )
-                self._set_cover_position(covers=[kwargs["cover"]], position=position, adaptive=True)
-            else:
-                # If the cover is already at the needed position, only log event
+            ):
+                if (
+                    indoor_temperature > int(kwargs["config"].common.temperature.indoor.setpoint)
+                    and kwargs["config"].common.temperature.outdoor.low_temperature is None
+                ):
+                    self.log(
+                        f"Indoor temperature ({indoor_temperature}) is greater than "
+                        f"{kwargs['config'].common.temperature.indoor.setpoint} - Adaptive mode will be used for cover "
+                        f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
+                        level="INFO",
+                    )
+                else:
+                    self.log(
+                        f"Indoor temperature ({indoor_temperature}) is greater than "
+                        f"{kwargs['config'].common.temperature.indoor.setpoint} and outdoor temperature "
+                        f"({outdoor_temperature}) is between "
+                        f"{kwargs['config'].common.temperature.outdoor.low_temperature} and "
+                        f"{kwargs['config'].common.temperature.outdoor.high_temperature} - "
+                        "Adaptive mode will be used for cover "
+                        f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
+                        level="INFO",
+                    )
+                # Check if the last changed time is greater than the minimum time change
+                last_changed_seconds = round(self.get_entity(entity=kwargs["cover"]).last_changed_seconds)
                 self.log(
                     f"Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
-                    f"is already at the needed position ({position}%)",
+                    f"last changed was {round(last_changed_seconds /60)} minutes ago",
                     level="DEBUG",
                 )
+                if last_changed_seconds < (kwargs["config"].common.position.min_time_change * 60):
+                    self.log(
+                        f"Last changed is lower than {kwargs['config'].common.position.min_time_change} minutes "
+                        f"(Actually : {round(last_changed_seconds / 60)}). Adaptive mode is not used this time "
+                        f"for cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
+                        level="INFO",
+                    )
+                    position = None  # Block change
+                else:
+                    self.log(
+                        f"Last changed is greater than {kwargs['config'].common.position.min_time_change} minutes "
+                        "(common.position.min_time_change). Allowed to move cover "
+                        f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
+                        level="DEBUG",
+                    )
+                    # Calculate the adaptive position with min_ratio_change
+                    calculated_adaptive_position = (
+                        Math.floor(
+                            self._get_calculated_adaptive(
+                                cover=kwargs["cover"], sun_azimuth=new, config=kwargs["config"]
+                            )
+                            / kwargs["config"].common.position.min_ratio_change
+                        )
+                        * kwargs["config"].common.position.min_ratio_change
+                    )
+                    self.log(
+                        f"Update adaptive position for cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' "
+                        f"({kwargs['cover']}) based on min_ratio_change : {calculated_adaptive_position}%",
+                        level="DEBUG",
+                    )
+                    position = calculated_adaptive_position
+
+            # Check if the outdoor temperature is defined and if the high temperature is defined
+            if (
+                kwargs["config"].common.temperature.outdoor.sensor is not None
+                and kwargs["config"].common.temperature.outdoor.high_temperature is not None
+            ):
+                # Check if the outdoor temperature is greater than the outdoor high temperature
+                if outdoor_temperature >= int(kwargs["config"].common.temperature.outdoor.high_temperature):
+                    self.log(
+                        f"Outdoor temperature ({outdoor_temperature}) > "
+                        f"{kwargs['config'].common.temperature.outdoor.high_temperature} "
+                        f"- Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
+                        "need to be close to avoid the heat",
+                        level="INFO",
+                    )
+                    position = 0
+                # Check if the outdoor temperature is lower than the indoor temperature
+                if outdoor_temperature < indoor_temperature:
+                    self.log(
+                        f"Outdoor temperature ({outdoor_temperature}) < Indoor temperature ({indoor_temperature}) "
+                        f"- Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
+                        "will be open",
+                        level="INFO",
+                    )
+                    position = 100
+
+            # Check if the position is defined
+            if position is not None:
+                position = min(
+                    max(kwargs["config"].common.position.closed, position), kwargs["config"].common.position.opened
+                )
+                self.log(
+                    "Update adaptive position for Cover "
+                    f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
+                    "based on opened (config.common.position.opened) and "
+                    f"closed configuration (config.common.position.closed) : {position}%",
+                    level="DEBUG",
+                )
+                if self._get_cover_currentposition(cover=kwargs["cover"]) != position:
+                    self.log(
+                        f"Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) is not "
+                        f"at the required position ({position}) "
+                        f"- Actual position : {self._get_cover_currentposition(cover=kwargs['cover'])}%",
+                        level="DEBUG",
+                    )
+                    self._set_cover_position(covers=[kwargs["cover"]], position=position, adaptive=True)
+                else:
+                    # If the cover is already at the needed position, only log event
+                    self.log(
+                        f"Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
+                        f"is already at the needed position ({position}%)",
+                        level="DEBUG",
+                    )
+        else:
+            self.log(
+                "All covers are locked by configuration (global and/or closing). No move allowed",
+                level="INFO",
+            )
 
     def _callback_listenstate_sunleavewindow(
         self, entity: str, attribute: str, old: str, new: str, **kwargs: dict
@@ -569,26 +576,32 @@ class CoversManager(hass.Hass):
         Returns:
             None
         """
-        self.log(
-            f"SunLeaveWindow - Callback triggered by state change of {entity}/{attribute} from {old} to {new}",
-            level="DEBUG",
-        )
-
-        # Check if the sun elevation is below or equal to horizon. If yes, disable adaptive mode
-        if float(self.get_state(entity_id="sun.sun", attribute="elevation")) <= 0:
+        if not self._get_islocked(config=kwargs["config"], action="open"):
             self.log(
-                "Sun elevation is below or equal to horizon. Adaptive mode is actually disable "
-                f"for cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}'",
+                f"SunLeaveWindow - Callback triggered by state change of {entity}/{attribute} from {old} to {new}",
                 level="DEBUG",
             )
-            return
 
-        self.log(
-            "Sun have leaved the window of "
-            f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
-            level="INFO",
-        )
-        self._set_cover_position(covers=[kwargs["cover"]], position=100, adaptive=True)
+            # Check if the sun elevation is below or equal to horizon. If yes, disable adaptive mode
+            if float(self.get_state(entity_id="sun.sun", attribute="elevation")) <= 0:
+                self.log(
+                    "Sun elevation is below or equal to horizon. Adaptive mode is actually disable "
+                    f"for cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}'",
+                    level="DEBUG",
+                )
+                return
+
+            self.log(
+                "Sun have leaved the window of "
+                f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
+                level="INFO",
+            )
+            self._set_cover_position(covers=[kwargs["cover"]], position=100, adaptive=True)
+        else:
+            self.log(
+                "All covers are locked by configuration (global and/or open). No move allowed",
+                level="INFO",
+            )
 
     def _get_calculated_adaptive(self, cover: str, sun_azimuth: str, config: ConfigValidator.Config) -> int:
         """
@@ -1048,14 +1061,15 @@ class CoversManager(hass.Hass):
 
         Args:
             config (ConfigValidator.Config): The configuration object.
-            action (str): The type of locker to check. Must be either 'open' or 'close'.
+            action (str): The type of locker to check. Must be either 'open', 'close' or 'adaptive'.
 
         Returns:
             bool: True if the locker is locked for the specified type, False otherwise.
         """
-        if action not in ["open", "close"]:
+        if action not in ["open", "close", "adaptive"]:
             self.log(
-                f"Action {action} is not valid for locker verification. Only 'open' or 'close' are allowed. "
+                f"Action {action} is not valid for locker verification. "
+                "Only 'open', 'close' or 'adaptive' are allowed. "
                 "Locker is disabled for this time",
                 level="ERROR",
             )
@@ -1078,7 +1092,7 @@ class CoversManager(hass.Hass):
 
         self.log(
             f"Action : {action} - Global Locker: {global_locker} "
-            f"- Opening Locker: {opening_locker} - Closing Locker: {closing_locker}",
+            f"- Opening Locker: {opening_locker} - Closing/Adaptive Locker: {closing_locker}",
             level="DEBUG",
         )
 
@@ -1086,7 +1100,7 @@ class CoversManager(hass.Hass):
             case "open":
                 decision = global_locker or opening_locker
                 return decision
-            case "close":
+            case "close" | "adaptive":
                 decision = global_locker or closing_locker
                 return decision
             case _:
