@@ -1,3 +1,10 @@
+# [1.4.0-beta.1](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.3.2-beta.5...v1.4.0-beta.1) (2024-08-11)
+
+
+### Features
+
+* Manage locker (global and close) for adaptive mode. ([5a45554](https://github.com/mguyard/appdaemon-coversmanager/commit/5a45554b2114b26a5223ed449c8c9565091c54e1))
+
 ## [1.3.2-beta.5](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.3.2-beta.4...v1.3.2-beta.5) (2024-06-12)
 
 
