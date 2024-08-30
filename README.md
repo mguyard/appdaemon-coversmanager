@@ -128,11 +128,11 @@ When adaptive mode is enable, each time the sun position change (based on sun.su
 ### 🔝 Requirements
 
 - A valid and functional deployment of [`AppDaemon Addon` connected to Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-appdaemon-4/163259)
-- A valid and functional [`HACS` (Home Assistant Community Store) integration](https://hacs.xyz/docs/setup/download)
+- A valid and functional [`HACS` (Home Assistant Community Store) integration](https://hacs.xyz/docs/use/download/download/)
 
 ### ⚙️ Installation
 
-- [Enable AppDaemon Apps in HACS](https://hacs.xyz/docs/categories/appdaemon_apps/)
+- [Enable AppDaemon Apps in HACS](https://hacs.xyz/docs/use/repositories/type/appdaemon/?h=app)
 - [Add Automation repository](https://my.home-assistant.io/redirect/hacs_repository/?owner=mguyard&repository=appdaemon-coversmanager&category=appdaemon) in HACS as AppDaemon repo : https://github.com/mguyard/appdaemon-coversmanager
 - Install Covers Manager in HACS
 - [Install `Studio Code Server` addon](https://my.home-assistant.io/redirect/supervisor_store/) to edit your AppDaemon & CoversManager configuration (optional if your prefer another method to modify your configuration)
