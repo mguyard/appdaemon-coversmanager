@@ -1,3 +1,10 @@
+# [1.5.0-beta.1](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.4.0...v1.5.0-beta.1) (2024-10-12)
+
+
+### Features
+
+* Add seasonal configuration support for indoor temperature setpoints ([8c2c853](https://github.com/mguyard/appdaemon-coversmanager/commit/8c2c853f0d9f62ce934dc39f98c1f52a8a872bf4))
+
 # [1.4.0](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.3.1...v1.4.0) (2024-08-11)
 
 
