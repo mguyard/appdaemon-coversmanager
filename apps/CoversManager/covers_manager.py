@@ -1115,7 +1115,9 @@ class CoversManager(hass.Hass):
                 )
                 return False
 
-    def _get_indoor_setpoint(self, seasons_entity: str, setpoint: int, seasons: ConfigValidator.SeasonsConfig) -> int:
+    def _get_indoor_setpoint(
+        self, seasons_entity: str, setpoint: int, seasons: ConfigValidator.SeasonsConfig | None
+    ) -> int:
         """
         Determines the indoor setpoint based on the current season.
         Args:
