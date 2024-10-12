@@ -1,3 +1,10 @@
+# [1.5.0-beta.2](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.5.0-beta.1...v1.5.0-beta.2) (2024-10-12)
+
+
+### Bug Fixes
+
+* Update _get_indoor_setpoint method to allow None for seasons parameter ([3dbc033](https://github.com/mguyard/appdaemon-coversmanager/commit/3dbc03337aa91bfe8616e63e6a2b43d555ca1d11))
+
 # [1.5.0-beta.1](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.4.0...v1.5.0-beta.1) (2024-10-12)
 
 
