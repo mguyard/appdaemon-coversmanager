@@ -195,8 +195,19 @@ class CommonConfig(BaseModel):
     @model_validator(mode="after")
     def checks(self) -> Self:
         # Seasons configuration check
-        if self.seasons is None and (self.temperature.indoor.seasons.spring.setpoint is not None or self.temperature.indoor.seasons.summer.setpoint is not None or self.temperature.indoor.seasons.autumn.setpoint is not None or self.temperature.indoor.seasons.winter.setpoint is not None):
-            raise ValueError("Seasons configuration (config.common.seasons) is missing to use seasons setpoints (config.common.temperature.indoor.seasons)")
+        if (
+            self.seasons is None
+            and (
+                self.temperature.indoor.seasons.spring.setpoint is not None
+                or self.temperature.indoor.seasons.summer.setpoint is not None
+                or self.temperature.indoor.seasons.autumn.setpoint is not None
+                or self.temperature.indoor.seasons.winter.setpoint is not None
+            )
+        ):
+            raise ValueError(
+                "Seasons configuration (config.common.seasons) is missing to use "
+                "seasons setpoints (config.common.temperature.indoor.seasons)"
+            )
         return self
 
 
