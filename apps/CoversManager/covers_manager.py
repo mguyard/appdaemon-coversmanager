@@ -250,6 +250,7 @@ class CoversManager(hass.Hass):
         """
         # Define all entities to check
         entities_dict = {
+            "config.common.seasons": (config.common.seasons if config.common.seasons is not None else None),
             "config.common.temperature.indoor.sensor": (
                 config.common.temperature.indoor.sensor if config.common.temperature is not None else None
             ),
@@ -417,10 +418,15 @@ class CoversManager(hass.Hass):
             outdoor_temperature = float(self.get_state(entity_id=kwargs["config"].common.temperature.outdoor.sensor))
 
             # Check if the indoor temperature is lower or equal than the indoor setpoint
-            if indoor_temperature <= int(kwargs["config"].common.temperature.indoor.setpoint):
+            setpoint = self._get_indoor_setpoint(
+                seasons_entity=kwargs["config"].common.seasons,
+                setpoint=kwargs["config"].common.temperature.indoor.setpoint,
+                seasons=kwargs["config"].common.temperature.indoor.seasons,
+            )
+            if indoor_temperature <= setpoint:
                 self.log(
                     f"Indoor temperature ({indoor_temperature}) <= "
-                    f"{kwargs['config'].common.temperature.indoor.setpoint} "
+                    f"{setpoint} "
                     f"- Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
                     "need to be open to heat the room",
                     level="DEBUG",
@@ -431,10 +437,9 @@ class CoversManager(hass.Hass):
             # or if the outdoor temperature is higher or equal than the outdoor low temperature (if defined)
             # but lower than the high temperature
             if (
-                indoor_temperature > int(kwargs["config"].common.temperature.indoor.setpoint)
-                and kwargs["config"].common.temperature.outdoor.low_temperature is None
+                indoor_temperature > setpoint and kwargs["config"].common.temperature.outdoor.low_temperature is None
             ) or (
-                indoor_temperature > int(kwargs["config"].common.temperature.indoor.setpoint)
+                indoor_temperature > setpoint
                 and kwargs["config"].common.temperature.outdoor.sensor is not None
                 and (
                     outdoor_temperature >= int(kwargs["config"].common.temperature.outdoor.low_temperature)
@@ -442,19 +447,19 @@ class CoversManager(hass.Hass):
                 )
             ):
                 if (
-                    indoor_temperature > int(kwargs["config"].common.temperature.indoor.setpoint)
+                    indoor_temperature > setpoint
                     and kwargs["config"].common.temperature.outdoor.low_temperature is None
                 ):
                     self.log(
                         f"Indoor temperature ({indoor_temperature}) is greater than "
-                        f"{kwargs['config'].common.temperature.indoor.setpoint} - Adaptive mode will be used for cover "
+                        f"{setpoint} - Adaptive mode will be used for cover "
                         f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
                         level="INFO",
                     )
                 else:
                     self.log(
                         f"Indoor temperature ({indoor_temperature}) is greater than "
-                        f"{kwargs['config'].common.temperature.indoor.setpoint} and outdoor temperature "
+                        f"{setpoint} and outdoor temperature "
                         f"({outdoor_temperature}) is between "
                         f"{kwargs['config'].common.temperature.outdoor.low_temperature} and "
                         f"{kwargs['config'].common.temperature.outdoor.high_temperature} - "
@@ -1109,3 +1114,27 @@ class CoversManager(hass.Hass):
                     level="ERROR",
                 )
                 return False
+
+    def _get_indoor_setpoint(self, seasons_entity: str, setpoint: int, seasons: ConfigValidator.SeasonsConfig) -> int:
+        """
+        Determines the indoor setpoint based on the current season.
+        Args:
+            seasons_entity (str): The entity ID representing the current season.
+            setpoint (int): The default setpoint to use if no specific setpoint is found for the current season.
+            seasons (ConfigValidator.SeasonsConfig): Configuration object containing setpoints for different seasons.
+        Returns:
+            int: The setpoint for the current season if available, otherwise the default setpoint.
+        """
+
+        current_season = str(self.get_state(entity_id=seasons_entity))
+        self.log(f"Current season : {current_season}", level="DEBUG")
+        self.log(f"Seasons : {seasons}", level="DEBUG")
+
+        if current_season in ["spring", "summer", "autumn", "winter"]:
+            season_setpoint = getattr(seasons, current_season).setpoint
+            if season_setpoint is not None:
+                self.log(f"Setpoint for {current_season} : {season_setpoint}", level="DEBUG")
+                return int(season_setpoint)
+
+        self.log(f"Setpoint for {current_season} not found. Using default setpoint : {setpoint}", level="DEBUG")
+        return int(setpoint)

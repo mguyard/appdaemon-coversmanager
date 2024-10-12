@@ -37,10 +37,49 @@ class TemperatureOutdoorConfig(BaseModel):
             raise ValueError("High temperature must be defined when outdoor sensor is defined")
         return self
 
+class SeasonConfig(BaseModel):
+    setpoint: PositiveInt | None = None
+
+class SeasonsConfig(BaseModel):
+    spring: SeasonConfig = SeasonConfig()
+    summer: SeasonConfig = SeasonConfig()
+    autumn: SeasonConfig = SeasonConfig()
+    winter: SeasonConfig = SeasonConfig()
+
+    @field_validator("spring", mode="before")
+    def spring_none_default_values(cls, value):
+        if value is None:
+            return SeasonConfig()
+        return value
+
+    @field_validator("summer", mode="before")
+    def summer_none_default_values(cls, value):
+        if value is None:
+            return SeasonConfig()
+        return value
+
+    @field_validator("autumn", mode="before")
+    def autumn_none_default_values(cls, value):
+        if value is None:
+            return SeasonConfig()
+        return value
+
+    @field_validator("winter", mode="before")
+    def winter_none_default_values(cls, value):
+        if value is None:
+            return SeasonConfig()
+        return value
 
 class TemperatureIndoorConfig(BaseModel):
     sensor: sensor_entity_format | None = None
     setpoint: PositiveInt | None = None
+    seasons: SeasonsConfig = SeasonsConfig()
+
+    @field_validator("seasons", mode="before")
+    def seasons_none_default_values(cls, value):
+        if value is None:
+            return SeasonsConfig()
+        return value
 
 
 class TemperatureConfig(BaseModel):
@@ -127,6 +166,7 @@ class CommonConfig(BaseModel):
     temperature: TemperatureConfig | None = None
     lux: LuxConfig | None = None
     locker: binary_sensor_entity_format | None = None
+    seasons: sensor_entity_format | None = None
 
     @field_validator("position", mode="before")
     def position_none_default_values(cls, value):
@@ -151,6 +191,24 @@ class CommonConfig(BaseModel):
         if value is None:
             return ManualConfig()
         return value
+
+    @model_validator(mode="after")
+    def checks(self) -> Self:
+        # Seasons configuration check
+        if (
+            self.seasons is None
+            and (
+                self.temperature.indoor.seasons.spring.setpoint is not None
+                or self.temperature.indoor.seasons.summer.setpoint is not None
+                or self.temperature.indoor.seasons.autumn.setpoint is not None
+                or self.temperature.indoor.seasons.winter.setpoint is not None
+            )
+        ):
+            raise ValueError(
+                "Seasons configuration (config.common.seasons) is missing to use "
+                "seasons setpoints (config.common.temperature.indoor.seasons)"
+            )
+        return self
 
 
 class PositionalConfig(BaseModel):
