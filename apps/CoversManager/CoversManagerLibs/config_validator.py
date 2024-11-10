@@ -188,7 +188,7 @@ class CommonConfig(BaseModel):
         if value is None:
             return ClosingConfig()
         return value
-    
+
     @field_validator("adaptive", mode="before")
     def adaptive_none_default_values(cls, value):
         if value is None:
