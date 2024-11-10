@@ -78,7 +78,7 @@ class CoversManager(hass.Hass):
                     )
 
             # Manage Adaptive
-            if config.common.closing.adaptive:
+            if config.common.adaptive.enable:
                 self.log("Adaptive mode is enabled", level="DEBUG")
                 for cover in config.covers.dict().keys():
                     self.log(
@@ -264,6 +264,9 @@ class CoversManager(hass.Hass):
             ),
             "config.common.closing.locker": (
                 config.common.closing.locker if config.common.closing.locker is not None else None
+            ),
+            "config.common.adaptive.locker": (
+                config.common.adaptive.locker if config.common.adaptive.locker is not None else None
             ),
         }
         # Add covers entities in list of entities to check
@@ -1095,9 +1098,15 @@ class CoversManager(hass.Hass):
         else:
             closing_locker = False
 
+        if config.common.adaptive.locker is not None:
+            adaptive_locker = True if self.get_state(entity_id=config.common.adaptive.locker) == "on" else False
+        else:
+            adaptive_locker = False
+
         self.log(
             f"Action : {action} - Global Locker: {global_locker} "
-            f"- Opening Locker: {opening_locker} - Closing/Adaptive Locker: {closing_locker}",
+            f"- Opening Locker: {opening_locker} - Closing Locker: {closing_locker} "
+            f"- Adaptive Locker: {adaptive_locker}",
             level="DEBUG",
         )
 
@@ -1105,8 +1114,11 @@ class CoversManager(hass.Hass):
             case "open":
                 decision = global_locker or opening_locker
                 return decision
-            case "close" | "adaptive":
+            case "close":
                 decision = global_locker or closing_locker
+                return decision
+            case "adaptive":
+                decision = global_locker or adaptive_locker
                 return decision
             case _:
                 self.log(

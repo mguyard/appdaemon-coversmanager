@@ -220,7 +220,8 @@ CoversManager:
                 type: "lux"
             closing:
                 type: "lux"
-                adaptive: True
+            adaptive:
+                enable: true
             temperature:
                 indoor:
                     sensor: "sensor.indoor_temperature"
@@ -250,7 +251,7 @@ Please find below all configuration parameters who don't apply to covers directl
 | Parent                                    | Parameters       | Description                                                                                                                         | Configuration Path                                               | Default | Type                 | Status   |
 |-------------------------------------------|------------------|-------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------|---------|----------------------|----------|
 | -                                         | dryrun           | Enable a dryrun mode that don't execute open or close functions                                                                     | config.dryrun                                                    | False   | Boolean              | Optional |
-| common                                    | locker           | A binary sensor who block opening for open and close when state is On (including all moves by adaptive mode)                        | config.common.locker                                             | None    | Binary Sensor Entity | Optional |
+| common                                    | locker           | A binary sensor who block opening for open, close and adaptive when state is On                                                     | config.common.locker                                             | None    | Binary Sensor Entity | Optional |
 | common                                    | seasons          | The sensor of Seasons integration (https://www.home-assistant.io/integrations/season) who return the actual season                  | config.common.seasons                                            | None    | Sensor Entity        | Optional |
 | position                                  | opened           | Define the max position allowed (%) when cover is open                                                                              | config.common.position.opened                                    | 100     | Integer              | Optional |
 | position                                  | closed           | Define the min position allowed (%) when cover is closed                                                                            | config.common.position.opened                                    | 0       | Integer              | Optional |
@@ -258,12 +259,13 @@ Please find below all configuration parameters who don't apply to covers directl
 | position                                  | min_time_change  | Define minimum time in minutes allowed between move                                                                                 | config.common.position.min_time_change                           | 10      | Integer              | Optional |
 | opening                                   | type             | Define method to open covers the morning (Allowed value : off|time|sunrise|lux|prefer-lux)                                          | config.common.opening.type                                       | off     | String               | Optional |
 | opening                                   | time             | Time to open covers - Only work with time or prefer-lux type                                                                        | config.common.opening.time                                       | None    | Time                 | Optional |
-| opening                                   | locker           | A binary sensor who block opening when state is On (including opening by adaptive mode)                                             | config.common.opening.locker                                     | None    | Binary Sensor Entity | Optional |
+| opening                                   | locker           | A binary sensor who block opening when state is On                                                                                  | config.common.opening.locker                                     | None    | Binary Sensor Entity | Optional |
 | closing                                   | type             | Define method to open covers the morning (Allowed value : off|time|sunrise|lux|prefer-lux)                                          | config.common.closing.type                                       | off     | String               | Optional |
 | closing                                   | time             | Time to open covers - Only work with time or prefer-lux type                                                                        | config.common.closing.time                                       | None    | Time                 | Optional |
-| closing                                   | locker           | A binary sensor who block closing when state is On (including all moves by adaptive mode)                                           | config.common.closing.locker                                     | None    | Binary Sensor Entity | Optional |
+| closing                                   | locker           | A binary sensor who block closing when state is On                                                                                  | config.common.closing.locker                                     | None    | Binary Sensor Entity | Optional |
 | closing                                   | secure_dusk      | Close at dusk in 2 layer if first closing method failed - Only work with time or prefer-lux type                                    | config.common.closing.secure_dusk                                | False   | Boolean              | Optional |
-| closing                                   | adaptive         | Enable adaptive mode who close/open covers based on Sun position and indoor/outdoor temperature                                     | config.common.closing.adaptive                                   | False   | Boolean              | Optional |
+| adaptive                                  | enable           | Enable adaptive mode who close/open covers based on Sun position and indoor/outdoor temperature                                     | config.common.adaptive.enable                                    | False   | Boolean              | Optional |
+| adaptive                                  | locker           | A binary sensor who block adaptive mode when state is On                                                                            | config.common.adaptive.enable                                    | False   | Boolean              | Optional |
 | manual                                    | allow            | Enable or Disable detection of manual position change of covers                                                                     | config.common.manual.allow                                       | False   | Boolean              | Optional |
 | manual                                    | timer            | Time to block movements when manual position change is detected. Required if config.common.manual.allow is True                     | config.common.manual.timer                                       | None    | TimeDelta            | Optional |
 | temperature.indoor                        | sensor           | Sensor who provide indoor temperature (Positive Integer - No Float)                                                                 | config.common.temperature.indoor.sensor                          | None    | Sensor Entity        | Optional |
@@ -317,8 +319,10 @@ CoversManager:
             closing:
                 type: "prefer-lux"
                 secure_dusk: True
-                adaptive: True
                 locker: "binary_sensor.locker_closing" # If at least one of closing and global locker are True, lock is True
+            adaptive:
+                enable: true
+                locker: "binary_sensor.locker_adaptive" # If at least one of adaptive and global locker are True, lock is True
             manual:
                 allow: true
                 timer: 01:00:00
