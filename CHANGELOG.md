@@ -1,3 +1,15 @@
+# [2.0.0-beta.1](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.5.0-beta.2...v2.0.0-beta.1) (2024-11-10)
+
+
+### Features
+
+* Refactor adaptive configuration to allow a dedicated locker for adaptive ([440fba2](https://github.com/mguyard/appdaemon-coversmanager/commit/440fba2ad1982d7d922e1e791eb2bd4fa469837b))
+
+
+### BREAKING CHANGES
+
+* adaptive configuration is no more in common.closing.adaptive but directly in common.adaptive with 2 parameters (enable and locker). You need to adjust your configuration to follow this change. Follow documentation please
+
 # [1.5.0-beta.2](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.5.0-beta.1...v1.5.0-beta.2) (2024-10-12)
 
 
