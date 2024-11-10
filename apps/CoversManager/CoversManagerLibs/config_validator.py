@@ -137,7 +137,6 @@ class ClosingConfig(BaseModel):
     type: Literal["off", "time", "sunset", "lux", "prefer-lux"] = "off"
     time: time_ | None = None
     secure_dusk: bool = False
-    adaptive: bool = False
     locker: binary_sensor_entity_format | None = None
 
     @model_validator(mode="after")
@@ -156,12 +155,16 @@ class ClosingConfig(BaseModel):
             )
         return self
 
+class AdaptiveConfig(BaseModel):
+    enable: bool = False
+    locker: binary_sensor_entity_format | None = None
+
 
 class CommonConfig(BaseModel):
     position: PositionConfig = PositionConfig()
     opening: OpeningConfig = OpeningConfig()
     closing: ClosingConfig = ClosingConfig()
-    adaptive: bool = False
+    adaptive: AdaptiveConfig = AdaptiveConfig()
     manual: ManualConfig = ManualConfig()
     temperature: TemperatureConfig | None = None
     lux: LuxConfig | None = None
@@ -184,6 +187,12 @@ class CommonConfig(BaseModel):
     def closing_none_default_values(cls, value):
         if value is None:
             return ClosingConfig()
+        return value
+
+    @field_validator("adaptive", mode="before")
+    def adaptive_none_default_values(cls, value):
+        if value is None:
+            return AdaptiveConfig()
         return value
 
     @field_validator("manual", mode="before")
@@ -280,16 +289,16 @@ class Config(BaseModel):
             "sensor",
             "setpoint",
         ]
-        if self.common.adaptive and (self.common.temperature is None or self.common.temperature.indoor is None):
+        if self.common.adaptive.enable and (self.common.temperature is None or self.common.temperature.indoor is None):
             raise ValueError(
                 "Temperature configuration (config.common.temperature.indoor) is missing as "
-                "adaptive mode (config.common.adaptive) is enabled (True)"
+                "adaptive mode (config.common.adaptive.enable) is enabled (True)"
             )
         for param in temperatureIndoorParameters:
-            if self.common.adaptive and getattr(self.common.temperature.indoor, param) is None:
+            if self.common.adaptive.enable and getattr(self.common.temperature.indoor, param) is None:
                 raise ValueError(
                     f"Configuration {param} (config.common.temperature.indoor.{param}) must be defined as "
-                    "adaptive mode (config.common.adaptive) is enabled (True)"
+                    "adaptive mode (config.common.adaptive.enable) is enabled (True)"
                 )
         # Covers configuration check
         if self.covers is None:
