@@ -157,6 +157,7 @@ class CoversManager(hass.Hass):
                             )
                             and (int(sunazimuth) <= azimuth_right),
                             new=lambda sunazimuth, azimuth_right=azimuth_right: int(sunazimuth) > azimuth_right,
+                            config=config,
                             cover=cover,
                         )
                         # Listen state for cover manual move detection
