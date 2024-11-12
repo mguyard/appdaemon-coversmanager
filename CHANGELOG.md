@@ -1,3 +1,10 @@
+# [2.0.0-beta.2](https://github.com/mguyard/appdaemon-coversmanager/compare/v2.0.0-beta.1...v2.0.0-beta.2) (2024-11-12)
+
+
+### Bug Fixes
+
+* Add config parameter to lambda when sun leave window ([9b74c79](https://github.com/mguyard/appdaemon-coversmanager/commit/9b74c79f9a6f65e2422da9f8f0e24656eb9e59ee))
+
 # [2.0.0-beta.1](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.5.0-beta.2...v2.0.0-beta.1) (2024-11-10)
 
 
