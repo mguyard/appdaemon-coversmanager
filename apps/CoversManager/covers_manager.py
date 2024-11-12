@@ -422,11 +422,14 @@ class CoversManager(hass.Hass):
             outdoor_temperature = float(self.get_state(entity_id=kwargs["config"].common.temperature.outdoor.sensor))
 
             # Check if the indoor temperature is lower or equal than the indoor setpoint
-            setpoint = self._get_indoor_setpoint(
-                seasons_entity=kwargs["config"].common.seasons,
-                setpoint=kwargs["config"].common.temperature.indoor.setpoint,
-                seasons=kwargs["config"].common.temperature.indoor.seasons,
-            )
+            if kwargs["config"].common.seasons is not None:
+                setpoint = self._get_indoor_setpoint(
+                    seasons_entity=kwargs["config"].common.seasons,
+                    setpoint=kwargs["config"].common.temperature.indoor.setpoint,
+                    seasons=kwargs["config"].common.temperature.indoor.seasons,
+                )
+            else:
+                setpoint = kwargs["config"].common.temperature.indoor.setpoint
             if indoor_temperature <= setpoint:
                 self.log(
                     f"Indoor temperature ({indoor_temperature}) <= "
