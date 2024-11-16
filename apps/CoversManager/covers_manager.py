@@ -51,8 +51,10 @@ class CoversManager(hass.Hass):
                     self.listen_state(
                         callback=self._callback_listenstate_covers,
                         entity_id=config.common.lux.sensor,
-                        new=lambda x: int(x) >= int(config.common.lux.open_lux) if x.isdigit() else False,
-                        old=lambda x: int(x) < int(config.common.lux.open_lux) if x.isdigit() else False,
+                        new=lambda x: float(x) >= config.common.lux.open_lux
+                            if x.replace('.', '', 1).isdigit() else False,
+                        old=lambda x: float(x) < config.common.lux.open_lux
+                            if x.replace('.', '', 1).isdigit() else False,
                         config=config,
                         action="open",
                     )
@@ -66,8 +68,10 @@ class CoversManager(hass.Hass):
                     self.listen_state(
                         callback=self._callback_listenstate_covers,
                         entity_id=config.common.lux.sensor,
-                        new=lambda x: int(x) >= int(config.common.lux.open_lux) if x.isdigit() else False,
-                        old=lambda x: int(x) < int(config.common.lux.open_lux) if x.isdigit() else False,
+                        new=lambda x: float(x) >= config.common.lux.open_lux
+                            if x.replace('.', '', 1).isdigit() else False,
+                        old=lambda x: float(x) < config.common.lux.open_lux
+                            if x.replace('.', '', 1).isdigit() else False,
                         config=config,
                         action="open",
                     )
@@ -197,8 +201,10 @@ class CoversManager(hass.Hass):
                     self.listen_state(
                         callback=self._callback_listenstate_covers,
                         entity_id=config.common.lux.sensor,
-                        new=lambda x: int(x) <= config.common.lux.close_lux if x.isdigit() else False,
-                        old=lambda x: int(x) > config.common.lux.close_lux if x.isdigit() else False,
+                        new=lambda x: float(x) <= config.common.lux.close_lux
+                            if x.replace('.', '', 1).isdigit() else False,
+                        old=lambda x: float(x) > config.common.lux.close_lux
+                            if x.replace('.', '', 1).isdigit() else False,
                         config=config,
                         action="close",
                     )
@@ -225,8 +231,10 @@ class CoversManager(hass.Hass):
                     self.listen_state(
                         callback=self._callback_listenstate_covers,
                         entity_id=config.common.lux.sensor,
-                        new=lambda x: int(x) <= config.common.lux.close_lux if x.isdigit() else False,
-                        old=lambda x: int(x) > config.common.lux.close_lux if x.isdigit() else False,
+                        new=lambda x: float(x) <= config.common.lux.close_lux
+                            if x.replace('.', '', 1).isdigit() else False,
+                        old=lambda x: float(x) > config.common.lux.close_lux if
+                            x.replace('.', '', 1).isdigit() else False,
                         config=config,
                         action="close",
                     )
