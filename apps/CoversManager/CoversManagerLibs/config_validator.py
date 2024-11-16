@@ -166,7 +166,7 @@ class CommonConfig(BaseModel):
     closing: ClosingConfig = ClosingConfig()
     adaptive: AdaptiveConfig = AdaptiveConfig()
     manual: ManualConfig = ManualConfig()
-    temperature: TemperatureConfig | None = None
+    temperature: TemperatureConfig = TemperatureConfig()
     lux: LuxConfig | None = None
     locker: binary_sensor_entity_format | None = None
     seasons: sensor_entity_format | None = None
@@ -199,6 +199,12 @@ class CommonConfig(BaseModel):
     def manual_none_default_values(cls, value):
         if value is None:
             return ManualConfig()
+        return value
+
+    @field_validator("temperature", mode="before")
+    def temperature_none_default_values(cls, value):
+        if value is None:
+            return TemperatureConfig()
         return value
 
     @model_validator(mode="after")

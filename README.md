@@ -370,7 +370,8 @@ CoversManager:
 
 ## 🪲 Debug
 
-To help to debug and understand an issue, you can enable the debug mode in app.
+To help to debug and understand an issue, you can enable the debug mode in your CoverManager app declared in `apps.yaml`.
+
 For this, edit the app configuration and set `log_level` to DEBUG
 
 ```yaml
