@@ -7,6 +7,9 @@
 * Set default value for temperature configuration and handle None case ([22bf86d](https://github.com/mguyard/appdaemon-coversmanager/commit/22bf86dbeefdf0882c3d9487cc658de0ac34761a))
 * Update lux sensor comparison to handle float values correctly ([f5835e1](https://github.com/mguyard/appdaemon-coversmanager/commit/f5835e118ae2ce83ab2ea0e304dc83008d3a1347))
 
+> [!CAUTION]
+> You need to restart your AppDaemon addon.
+
 # [2.0.0-beta.2](https://github.com/mguyard/appdaemon-coversmanager/compare/v2.0.0-beta.1...v2.0.0-beta.2) (2024-11-12)
 
 
