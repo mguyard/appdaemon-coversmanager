@@ -1,3 +1,25 @@
+# [2.0.0](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.4.0...v2.0.0) (2024-11-26)
+
+
+### Bug Fixes
+
+* Add config parameter to lambda when sun leave window ([9b74c79](https://github.com/mguyard/appdaemon-coversmanager/commit/9b74c79f9a6f65e2422da9f8f0e24656eb9e59ee))
+* Handle indoor setpoint when seasons configuration is absent ([eebe9f9](https://github.com/mguyard/appdaemon-coversmanager/commit/eebe9f99e30abf2e4fcef8c0f075c17b21141457))
+* Set default value for temperature configuration and handle None case ([22bf86d](https://github.com/mguyard/appdaemon-coversmanager/commit/22bf86dbeefdf0882c3d9487cc658de0ac34761a))
+* Update _get_indoor_setpoint method to allow None for seasons parameter ([3dbc033](https://github.com/mguyard/appdaemon-coversmanager/commit/3dbc03337aa91bfe8616e63e6a2b43d555ca1d11))
+* Update lux sensor comparison to handle float values correctly ([f5835e1](https://github.com/mguyard/appdaemon-coversmanager/commit/f5835e118ae2ce83ab2ea0e304dc83008d3a1347))
+
+
+### Features
+
+* Add seasonal configuration support for indoor temperature setpoints ([8c2c853](https://github.com/mguyard/appdaemon-coversmanager/commit/8c2c853f0d9f62ce934dc39f98c1f52a8a872bf4))
+* Refactor adaptive configuration to allow a dedicated locker for adaptive ([440fba2](https://github.com/mguyard/appdaemon-coversmanager/commit/440fba2ad1982d7d922e1e791eb2bd4fa469837b))
+
+
+### BREAKING CHANGES
+
+* adaptive configuration is no more in common.closing.adaptive but directly in common.adaptive with 2 parameters (enable and locker). You need to adjust your configuration to follow this change. Follow documentation please
+
 # [2.0.0-beta.3](https://github.com/mguyard/appdaemon-coversmanager/compare/v2.0.0-beta.2...v2.0.0-beta.3) (2024-11-16)
 
 
