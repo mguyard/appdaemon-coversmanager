@@ -20,6 +20,9 @@
 
 * adaptive configuration is no more in common.closing.adaptive but directly in common.adaptive with 2 parameters (enable and locker). You need to adjust your configuration to follow this change. Follow documentation please
 
+> [!CAUTION]
+> You need to restart your AppDaemon addon.
+
 # [2.0.0-beta.3](https://github.com/mguyard/appdaemon-coversmanager/compare/v2.0.0-beta.2...v2.0.0-beta.3) (2024-11-16)
 
 
