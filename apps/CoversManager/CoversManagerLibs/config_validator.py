@@ -15,7 +15,7 @@ from typing_extensions import Self
 import CoversManagerLibs.utils as Utils
 
 sensor_entity_format = Annotated[str, AfterValidator(Utils.isEntityFormat)]
-binary_sensor_entity_format = Annotated[str, AfterValidator(Utils.isBinarySensorEntityFormat)]
+locker_format = Annotated[str, AfterValidator(Utils.isLockerEntityFormat)]
 time_ = time  # To resolve issue : https://github.com/pydantic/pydantic/discussions/9284
 
 
@@ -122,7 +122,7 @@ class ManualConfig(BaseModel):
 class OpeningConfig(BaseModel):
     type: Literal["off", "time", "sunrise", "lux", "prefer-lux"] = "off"
     time: time_ | None = None
-    locker: binary_sensor_entity_format | None = None
+    locker: locker_format | None = None
 
     @model_validator(mode="after")
     def checks(self) -> Self:
@@ -137,7 +137,7 @@ class ClosingConfig(BaseModel):
     type: Literal["off", "time", "sunset", "lux", "prefer-lux"] = "off"
     time: time_ | None = None
     secure_dusk: bool = False
-    locker: binary_sensor_entity_format | None = None
+    locker: locker_format | None = None
 
     @model_validator(mode="after")
     def checks(self) -> Self:
@@ -157,7 +157,7 @@ class ClosingConfig(BaseModel):
 
 class AdaptiveConfig(BaseModel):
     enable: bool = False
-    locker: binary_sensor_entity_format | None = None
+    locker: locker_format | None = None
 
 
 class CommonConfig(BaseModel):
@@ -168,7 +168,7 @@ class CommonConfig(BaseModel):
     manual: ManualConfig = ManualConfig()
     temperature: TemperatureConfig = TemperatureConfig()
     lux: LuxConfig | None = None
-    locker: binary_sensor_entity_format | None = None
+    locker: locker_format | None = None
     seasons: sensor_entity_format | None = None
 
     @field_validator("position", mode="before")
