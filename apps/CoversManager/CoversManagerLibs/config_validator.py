@@ -1,5 +1,5 @@
 from datetime import time, timedelta
-from typing import Dict, Literal
+from typing import Annotated, Literal
 
 from pydantic import (
     BaseModel,
@@ -10,7 +10,7 @@ from pydantic import (
     model_validator,
 )
 from pydantic.functional_validators import AfterValidator
-from typing_extensions import Annotated, Self
+from typing_extensions import Self
 
 import CoversManagerLibs.utils as Utils
 
@@ -256,7 +256,7 @@ class CoversConfig(BaseModel):
 
 
 class CoversName(RootModel):
-    root: Dict[Annotated[str, AfterValidator(Utils.isCoverEntityFormat)], CoversConfig]
+    root: dict[Annotated[str, AfterValidator(Utils.isCoverEntityFormat)], CoversConfig]
 
 
 class Config(BaseModel):
