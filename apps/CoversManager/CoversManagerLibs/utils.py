@@ -19,24 +19,26 @@ def isEntityFormat(value: str) -> str:
     return value
 
 
-def isSpecificEntityFormat(value: str, format: str) -> str:
+def isSpecificEntityFormat(value: str, formats: list) -> str:
     """
-    Checks if the given value is in a specific entity format.
+    Checks if the given value is in one of the specific entity formats.
 
     Args:
         value (str): The value to be checked.
-        format (str): The specific entity format.
+        formats (list): A list of specific entity formats.
 
     Returns:
         str: The validated value.
 
     Raises:
-        ValueError: If the value is not in the specified entity format.
+        ValueError: If the value is not in one of the specified entity formats.
     """
     value = isEntityFormat(value)
-    if not value.startswith(f"{format}."):
-        raise ValueError(f"Value must be a valid HA {format} entity")
-    return value
+    for format in formats:
+        if value.startswith(f"{format}."):
+            return value
+    supported_formats = ", ".join(formats)
+    raise ValueError(f"Value must be a valid HA entity in one of the formats: {supported_formats}")
 
 
 def isCoverEntityFormat(value: str) -> str:
@@ -52,7 +54,7 @@ def isCoverEntityFormat(value: str) -> str:
     Raises:
         ValueError: If the value is not in the correct format.
     """
-    return isSpecificEntityFormat(value, "cover")
+    return isSpecificEntityFormat(value, ["cover"])
 
 
 def isSensorEntityFormat(value: str) -> str:
@@ -68,7 +70,7 @@ def isSensorEntityFormat(value: str) -> str:
     Raises:
         ValueError: If the value is not in the correct format.
     """
-    return isSpecificEntityFormat(value, "sensor")
+    return isSpecificEntityFormat(value, ["sensor"])
 
 
 def isBinarySensorEntityFormat(value: str) -> str:
@@ -84,4 +86,21 @@ def isBinarySensorEntityFormat(value: str) -> str:
     Raises:
         ValueError: If the value is not in the correct format.
     """
-    return isSpecificEntityFormat(value, "binary_sensor")
+    return isSpecificEntityFormat(value, ["binary_sensor"])
+
+
+def isLockerEntityFormat(value: str) -> str:
+    """
+    Checks if the given value is in the format of supported Home Assistant entity for locker.
+
+    Args:
+        value (str): The value to be checked.
+
+    Returns:
+        str: The validated value.
+
+    Raises:
+        ValueError: If the value is not in the correct format.
+    """
+    supported_formats = ["binary_sensor","input_boolean"]
+    return isSpecificEntityFormat(value, supported_formats)

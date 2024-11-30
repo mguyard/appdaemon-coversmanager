@@ -296,6 +296,69 @@ class CoversManager(hass.Hass):
                 )
         self.log("All entities exists and are valid", level="DEBUG")
 
+    def _get_target_position(self, config, action) -> int :
+        """
+        Determines the target position for a cover based on the provided configuration and action.
+
+        Args:
+            config: A configuration object containing position settings for different seasons and actions.
+            action (str): The action to be performed, either "open" or "close".
+
+        Returns:
+            int: The target position for the cover.
+        """
+        current_season = str(self.get_state(entity_id=config.common.seasons))
+        self.log(f"Current season : {current_season} / Action : {action}", level="DEBUG")
+
+        if action == "open":
+            if (
+                config.common.opening.position
+                and config.common.opening.position.seasons
+                and hasattr(config.common.opening.position.seasons, current_season)
+                and getattr(config.common.opening.position.seasons, current_season) is not None
+            ):
+                value = getattr(config.common.opening.position.seasons, current_season)
+                self.log(
+                    f"Season '{current_season}' is in opening.position.seasons. "
+                    f"Return value : {value}",
+                    level="DEBUG"
+                )
+                return value
+            elif config.common.opening.position and config.common.opening.position.default is not None:
+                self.log(
+                    "Opening value is defined in opening.position.default. "
+                    f"Return value: {config.common.opening.position.default}",
+                    level="DEBUG"
+                )
+                return config.common.opening.position.default
+            else:
+                self.log(f"Return value : {config.common.position.opened}", level="DEBUG")
+                return config.common.position.opened
+        elif action == "close":
+            if (
+                config.common.closing.position
+                and config.common.closing.position.seasons
+                and hasattr(config.common.closing.position.seasons, current_season)
+                and getattr(config.common.closing.position.seasons, current_season) is not None
+            ):
+                value = getattr(config.common.closing.position.seasons, current_season)
+                self.log(
+                    f"Season '{current_season}' is in closing.position.seasons. "
+                    f"Return value : {value}",
+                    level="DEBUG"
+                )
+                return value
+            elif config.common.closing.position and config.common.closing.position.default is not None:
+                self.log(
+                    "Closing value is defined in opening.position.default. "
+                    f"Return value: {config.common.closing.position.default}",
+                    level="DEBUG"
+                )
+                return config.common.closing.position.default
+            else:
+                self.log(f"Return value : {config.common.position.closed}", level="DEBUG")
+                return config.common.position.closed
+
     def _callback_move_covers(self, **kwargs: dict) -> None:
         """
         Callback function for opening or closing covers.
@@ -315,16 +378,23 @@ class CoversManager(hass.Hass):
             self.log(f"{kwargs['action'].capitalize()} callback triggered...", level="DEBUG")
             covers_list = list(kwargs["config"].covers.dict().keys())  # List all configured covers
             self.log(f"Covers list : {covers_list}", level="DEBUG")
+
+            target_position = self._get_target_position(kwargs["config"], kwargs["action"])
+            self.log(f"Target position : {target_position}%", level="DEBUG")
+
             try:
                 covers_to_move = self._get_action_coverlist(
-                    covers_list=covers_list, action=kwargs["action"], config=kwargs["config"]
+                    covers_list=covers_list,
+                    action=kwargs["action"],
+                    position_requested=target_position,
+                    config=kwargs["config"]
                 )
             except ValueError as e:
                 self.log(e, level="ERROR")
                 return
 
-            if (kwargs["action"] == "open" and kwargs["config"].common.position.opened == 100) or (
-                kwargs["action"] == "close" and kwargs["config"].common.position.closed == 0
+            if (kwargs["action"] == "open" and target_position == 100) or (
+                kwargs["action"] == "close" and target_position == 0
             ):
                 if len(covers_to_move) > 0:
                     self.log(f"Covers list to {kwargs['action']} : {covers_to_move}", level="DEBUG")
@@ -339,14 +409,9 @@ class CoversManager(hass.Hass):
                 self.log(f"Positional Covers list to {kwargs['action']} : {covers_positional}", level="DEBUG")
                 self.log(f"Unpositional Covers list to {kwargs['action']} : {covers_unpositional}", level="DEBUG")
                 if len(covers_positional) > 0:
-                    position_requested = (
-                        kwargs["config"].common.position.opened
-                        if kwargs["action"] == "open"
-                        else kwargs["config"].common.position.closed
-                    )
-                    self._set_cover_position(covers=covers_positional, position=position_requested)
+                    self._set_cover_position(covers=covers_positional, position=target_position)
                 if len(covers_unpositional) > 0:
-                    if kwargs["action"] == "open":
+                    if kwargs["action"] in ["open", "close"]:
                         self._set_openclose_cover_full(covers=covers_unpositional, action=kwargs["action"])
         else:
             self.log(
@@ -660,13 +725,16 @@ class CoversManager(hass.Hass):
         )
         return cover_percent
 
-    def _get_action_coverlist(self, covers_list: list, action: str, config: ConfigValidator.Config) -> list:
+    def _get_action_coverlist(
+        self, covers_list: list, action: str, position_requested: int, config: ConfigValidator.Config
+    ) -> list:
         """
         Get the list of covers to open/close.
 
         Args:
             covers_list (list): List of covers.
             action (str): Action to perform (open/close).
+            position_requested (int): Requested position.
             config (ConfigValidator.Config): Configuration object.
 
         Returns:
@@ -693,10 +761,6 @@ class CoversManager(hass.Hass):
                     f"Cover '{self.friendly_name(entity_id=cover).strip()}' ({cover}) "
                     f"current position : {current_position}",
                     level="DEBUG",
-                )
-                # Define position requested based on action and configuration
-                position_requested = (
-                    config.common.position.opened if action == "open" else config.common.position.closed
                 )
                 # If cover does not support positional action, force position request to 100% or 0%
                 if not config.covers.root[cover].positional.action:
@@ -771,12 +835,12 @@ class CoversManager(hass.Hass):
         position_required = 100 if action == "open" else 0
         if self.dryrun:
             self.log(
-                f"DRY-RUN : {action.capitalize()} cover {covers} to {position_required}% ...",
+                f"DRY-RUN : {action.capitalize()} cover {covers} to fully {action} position...",
                 level="INFO",
             )
         else:
             if len(covers) > 0:
-                self.log(f"{action.capitalize()} cover {covers} to {position_required}% ...", level="INFO")
+                self.log(f"{action.capitalize()} cover {covers} to fully {action} position...", level="INFO")
                 for cover in covers:
                     if adaptive:
                         self._create_update_covermanager_entity(
