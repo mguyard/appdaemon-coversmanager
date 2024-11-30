@@ -118,11 +118,23 @@ class ManualConfig(BaseModel):
             )
         return self
 
+class OpenCloseSeasonsPositionConfig(BaseModel):
+    spring: int = Field(ge=0, le=100, default=None)
+    summer: int = Field(ge=0, le=100, default=None)
+    autumn: int = Field(ge=0, le=100, default=None)
+    winter: int = Field(ge=0, le=100, default=None)
+
+
+class OpenClosePositionConfig(BaseModel):
+    default: int = Field(ge=0, le=100, default=None)
+    seasons: OpenCloseSeasonsPositionConfig | None = None
+
 
 class OpeningConfig(BaseModel):
     type: Literal["off", "time", "sunrise", "lux", "prefer-lux"] = "off"
     time: time_ | None = None
     locker: locker_format | None = None
+    position: OpenClosePositionConfig | None = None
 
     @model_validator(mode="after")
     def checks(self) -> Self:
@@ -138,6 +150,7 @@ class ClosingConfig(BaseModel):
     time: time_ | None = None
     secure_dusk: bool = False
     locker: locker_format | None = None
+    position: OpenClosePositionConfig | None = None
 
     @model_validator(mode="after")
     def checks(self) -> Self:
@@ -222,6 +235,19 @@ class CommonConfig(BaseModel):
             raise ValueError(
                 "Seasons configuration (config.common.seasons) is missing to use "
                 "seasons setpoints (config.common.temperature.indoor.seasons)"
+            )
+
+        if (
+            self.seasons is None
+            and (
+                self.opening.position.seasons is not None
+                or self.closing.position.seasons is not None
+            )
+        ):
+            raise ValueError(
+                "Seasons configuration (config.common.seasons) is missing to use "
+                "seasons position for open or close (config.common.opening.position.seasons "
+                "or config.common.closing.position.seasons)"
             )
         return self
 
