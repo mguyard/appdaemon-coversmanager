@@ -1,3 +1,10 @@
+# [2.1.0-beta.2](https://github.com/mguyard/appdaemon-coversmanager/compare/v2.1.0-beta.1...v2.1.0-beta.2) (2024-12-21)
+
+
+### Features
+
+* Add bypass option for global locker in closing configuration and update logging levels ([584f108](https://github.com/mguyard/appdaemon-coversmanager/commit/584f108e88618fac274d630dac772e88a21f05c9))
+
 # [2.1.0-beta.1](https://github.com/mguyard/appdaemon-coversmanager/compare/v2.0.0...v2.1.0-beta.1) (2024-11-30)
 
 
