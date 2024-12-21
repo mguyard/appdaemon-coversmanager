@@ -150,6 +150,7 @@ class ClosingConfig(BaseModel):
     time: time_ | None = None
     secure_dusk: bool = False
     locker: locker_format | None = None
+    bypass_global_locker: bool = False
     position: OpenClosePositionConfig | None = None
 
     @model_validator(mode="after")

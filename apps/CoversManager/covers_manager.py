@@ -640,8 +640,8 @@ class CoversManager(hass.Hass):
                     )
         else:
             self.log(
-                "All covers are locked by configuration (global and/or closing). No move allowed",
-                level="INFO",
+                "All covers are locked by adaptive configuration. No move allowed",
+                level="DEBUG",
             )
 
     def _callback_listenstate_sunleavewindow(
@@ -661,7 +661,7 @@ class CoversManager(hass.Hass):
         Returns:
             None
         """
-        if not self._get_islocked(config=kwargs["config"], action="open"):
+        if not self._get_islocked(config=kwargs["config"], action="adaptive"):
             self.log(
                 f"SunLeaveWindow - Callback triggered by state change of {entity}/{attribute} from {old} to {new}",
                 level="DEBUG",
@@ -684,7 +684,7 @@ class CoversManager(hass.Hass):
             self._set_cover_position(covers=[kwargs["cover"]], position=100, adaptive=True)
         else:
             self.log(
-                "All covers are locked by configuration (global and/or open). No move allowed",
+                "All covers are locked by adaptive configuration. No move allowed",
                 level="INFO",
             )
 
@@ -1189,12 +1189,22 @@ class CoversManager(hass.Hass):
         match action:
             case "open":
                 decision = global_locker or opening_locker
+                self.log(f"Open - Lock Decision : {decision}", level="DEBUG")
                 return decision
             case "close":
-                decision = global_locker or closing_locker
-                return decision
+                if (
+                    config.common.closing.bypass_global_locker is not None
+                    and config.common.closing.bypass_global_locker is True
+                ):
+                    self.log("Closing bypass global locker is enabled. Global locker will be ignored", level="DEBUG")
+                    return False
+                else:
+                    decision = global_locker or closing_locker
+                    self.log(f"Close - Lock Decision : {decision}", level="DEBUG")
+                    return decision
             case "adaptive":
                 decision = global_locker or adaptive_locker
+                self.log(f"Adaptive - Lock Decision : {decision}", level="DEBUG")
                 return decision
             case _:
                 self.log(
