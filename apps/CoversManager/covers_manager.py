@@ -85,14 +85,15 @@ class CoversManager(hass.Hass):
             if config.common.adaptive.enable:
                 self.log("Adaptive mode is enabled", level="DEBUG")
                 for cover in config.covers.dict().keys():
+                    friendly: str = self.get_state(cover, attribute="friendly_name") or cover
                     self.log(
-                        f"Configuration Cover : '{self.friendly_name(entity_id=cover).strip()}' ({cover})",
+                        f"Configuration Cover : '{friendly.strip()}' ({cover})",
                         level="DEBUG",
                     )
 
                     if config.covers.root[cover].positional.action:
                         self.log(
-                            f"Cover '{self.friendly_name(entity_id=cover).strip()}' "
+                            f"Cover '{friendly.strip()}' "
                             f"({cover}) supports positional move. Adaptive mode is enable for this cover",
                             level="DEBUG",
                         )
@@ -101,7 +102,7 @@ class CoversManager(hass.Hass):
                         adaptive_position_entity = self._get_adaptive_entity(cover=cover)
                         self.log(
                             "Content of Adaptive Entity for cover "
-                            f"'{self.friendly_name(entity_id=cover).strip()}' ({cover}) "
+                            f"'{friendly.strip()}' ({cover}) "
                             f"to create/update : {adaptive_position_entity}",
                             level="DEBUG",
                         )
@@ -114,7 +115,7 @@ class CoversManager(hass.Hass):
                         manual_lock_entity = self._get_manuallock_entity(cover=cover)
                         self.log(
                             "Content of ManualLock Entity for cover "
-                            f"'{self.friendly_name(entity_id=cover).strip()}' ({cover}) "
+                            f"'{friendly.strip()}' ({cover}) "
                             f"to create/update : {manual_lock_entity}",
                             level="DEBUG",
                         )
@@ -133,7 +134,7 @@ class CoversManager(hass.Hass):
                             config.covers.root[cover].window_azimuth + config.covers.root[cover].fov.right
                         ) % 360
                         self.log(
-                            f"Cover '{self.friendly_name(entity_id=cover).strip()}' ({cover}) - "
+                            f"Cover '{friendly.strip()}' ({cover}) - "
                             f"Azimuth left : {azimuth_left} - Azimuth right : {azimuth_right}",
                             level="DEBUG",
                         )
@@ -180,7 +181,7 @@ class CoversManager(hass.Hass):
 
                     else:
                         self.log(
-                            f"Cover '{self.friendly_name(entity_id=cover).strip()}' ({cover}) "
+                            f"Cover '{friendly.strip()}' ({cover}) "
                             "does not support positional move. Adaptive mode is disabled for this cover",
                             level="INFO",
                         )
@@ -472,11 +473,13 @@ class CoversManager(hass.Hass):
                 level="DEBUG",
             )
 
+            friendly = self.get_state(kwargs['cover'], attribute="friendly_name") or kwargs['cover']
+
             # Check if the sun elevation is below or equal to horizon. If yes, disable adaptive mode
             if float(self.get_state(entity_id="sun.sun", attribute="elevation")) <= 0:
                 self.log(
                     "Sun elevation is below or equal to horizon. Adaptive mode is actually disable "
-                    f"for cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}'",
+                    f"for cover '{friendly.strip()}'",
                     level="DEBUG",
                 )
                 return
@@ -485,7 +488,7 @@ class CoversManager(hass.Hass):
             if old is not None and old < kwargs["azimuth_left"]:
                 self.log(
                     "Sun has entered the window of "
-                    f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
+                    f"'{friendly.strip()}' ({kwargs['cover']})",
                     level="INFO",
                 )
             position = None
@@ -507,7 +510,7 @@ class CoversManager(hass.Hass):
                 self.log(
                     f"Indoor temperature ({indoor_temperature}) <= "
                     f"{setpoint} "
-                    f"- Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
+                    f"- Cover '{friendly.strip()}' ({kwargs['cover']}) "
                     "need to be open to heat the room",
                     level="DEBUG",
                 )
@@ -533,7 +536,7 @@ class CoversManager(hass.Hass):
                     self.log(
                         f"Indoor temperature ({indoor_temperature}) is greater than "
                         f"{setpoint} - Adaptive mode will be used for cover "
-                        f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
+                        f"'{friendly.strip()}' ({kwargs['cover']})",
                         level="INFO",
                     )
                 else:
@@ -544,13 +547,13 @@ class CoversManager(hass.Hass):
                         f"{kwargs['config'].common.temperature.outdoor.low_temperature} and "
                         f"{kwargs['config'].common.temperature.outdoor.high_temperature} - "
                         "Adaptive mode will be used for cover "
-                        f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
+                        f"'{friendly.strip()}' ({kwargs['cover']})",
                         level="INFO",
                     )
                 # Check if the last changed time is greater than the minimum time change
                 last_changed_seconds = round(self.get_entity(entity=kwargs["cover"]).last_changed_seconds)
                 self.log(
-                    f"Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
+                    f"Cover '{friendly.strip()}' ({kwargs['cover']}) "
                     f"last changed was {round(last_changed_seconds /60)} minutes ago",
                     level="DEBUG",
                 )
@@ -558,7 +561,7 @@ class CoversManager(hass.Hass):
                     self.log(
                         f"Last changed is lower than {kwargs['config'].common.position.min_time_change} minutes "
                         f"(Actually : {round(last_changed_seconds / 60)}). Adaptive mode is not used this time "
-                        f"for cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
+                        f"for cover '{friendly.strip()}' ({kwargs['cover']})",
                         level="INFO",
                     )
                     position = None  # Block change
@@ -566,7 +569,7 @@ class CoversManager(hass.Hass):
                     self.log(
                         f"Last changed is greater than {kwargs['config'].common.position.min_time_change} minutes "
                         "(common.position.min_time_change). Allowed to move cover "
-                        f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
+                        f"'{friendly.strip()}' ({kwargs['cover']})",
                         level="DEBUG",
                     )
                     # Calculate the adaptive position with min_ratio_change
@@ -580,7 +583,7 @@ class CoversManager(hass.Hass):
                         * kwargs["config"].common.position.min_ratio_change
                     )
                     self.log(
-                        f"Update adaptive position for cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' "
+                        f"Update adaptive position for cover '{friendly.strip()}' "
                         f"({kwargs['cover']}) based on min_ratio_change : {calculated_adaptive_position}%",
                         level="DEBUG",
                     )
@@ -596,7 +599,7 @@ class CoversManager(hass.Hass):
                     self.log(
                         f"Outdoor temperature ({outdoor_temperature}) > "
                         f"{kwargs['config'].common.temperature.outdoor.high_temperature} "
-                        f"- Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
+                        f"- Cover '{friendly.strip()}' ({kwargs['cover']}) "
                         "need to be close to avoid the heat",
                         level="INFO",
                     )
@@ -605,7 +608,7 @@ class CoversManager(hass.Hass):
                 if outdoor_temperature < indoor_temperature:
                     self.log(
                         f"Outdoor temperature ({outdoor_temperature}) < Indoor temperature ({indoor_temperature}) "
-                        f"- Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
+                        f"- Cover '{friendly.strip()}' ({kwargs['cover']}) "
                         "will be open",
                         level="INFO",
                     )
@@ -618,14 +621,14 @@ class CoversManager(hass.Hass):
                 )
                 self.log(
                     "Update adaptive position for Cover "
-                    f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
+                    f"'{friendly.strip()}' ({kwargs['cover']}) "
                     "based on opened (config.common.position.opened) and "
                     f"closed configuration (config.common.position.closed) : {position}%",
                     level="DEBUG",
                 )
                 if self._get_cover_currentposition(cover=kwargs["cover"]) != position:
                     self.log(
-                        f"Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) is not "
+                        f"Cover '{friendly.strip()}' ({kwargs['cover']}) is not "
                         f"at the required position ({position}) "
                         f"- Actual position : {self._get_cover_currentposition(cover=kwargs['cover'])}%",
                         level="DEBUG",
@@ -634,7 +637,7 @@ class CoversManager(hass.Hass):
                 else:
                     # If the cover is already at the needed position, only log event
                     self.log(
-                        f"Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) "
+                        f"Cover '{friendly.strip()}' ({kwargs['cover']}) "
                         f"is already at the needed position ({position}%)",
                         level="DEBUG",
                     )
@@ -667,18 +670,20 @@ class CoversManager(hass.Hass):
                 level="DEBUG",
             )
 
+            friendly = self.get_state(kwargs['cover'], attribute="friendly_name") or kwargs['cover']
+
             # Check if the sun elevation is below or equal to horizon. If yes, disable adaptive mode
             if float(self.get_state(entity_id="sun.sun", attribute="elevation")) <= 0:
                 self.log(
                     "Sun elevation is below or equal to horizon. Adaptive mode is actually disable "
-                    f"for cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}'",
+                    f"for cover '{friendly.strip()}'",
                     level="DEBUG",
                 )
                 return
 
             self.log(
                 "Sun have leaved the window of "
-                f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']})",
+                f"'{friendly.strip()}' ({kwargs['cover']})",
                 level="INFO",
             )
             self._set_cover_position(covers=[kwargs["cover"]], position=100, adaptive=True)
@@ -718,8 +723,9 @@ class CoversManager(hass.Hass):
         )
         # Convert the height of the cover to a percentage
         cover_percent = min(max(0, round(cover_heigh / (config.covers.root[cover].window_heigh / 100) * 100)), 100)
+        friendly = self.get_state(cover, attribute="friendly_name") or cover
         self.log(
-            f"Cover '{self.friendly_name(entity_id=cover).strip()}' ({cover}) shoud be "
+            f"Cover '{friendly.strip()}' ({cover}) shoud be "
             f"position to {cover_percent}% (adaptive calculation)",
             level="DEBUG",
         )
@@ -749,37 +755,38 @@ class CoversManager(hass.Hass):
                 f"Please open issue to developer on GitHub {Constants.GITHUB_ISSUE_URL}"
             )
         for cover in covers_list:
+            friendly = self.get_state(cover, attribute="friendly_name") or cover
             # If cover supports positional status
             if config.covers.root[cover].positional.status:
                 current_position = self._get_cover_currentposition(cover=cover)
                 if current_position is None:
                     self.log(
-                        f"Cover '{self.friendly_name(entity_id=cover).strip()}' ({cover}) current position is unknown",
+                        f"Cover '{friendly.strip()}' ({cover}) current position is unknown",
                         level="WARNING",
                     )
                 self.log(
-                    f"Cover '{self.friendly_name(entity_id=cover).strip()}' ({cover}) "
+                    f"Cover '{friendly.strip()}' ({cover}) "
                     f"current position : {current_position}",
                     level="DEBUG",
                 )
                 # If cover does not support positional action, force position request to 100% or 0%
                 if not config.covers.root[cover].positional.action:
                     self.log(
-                        f"Cover '{self.friendly_name(entity_id=cover).strip()}' ({cover}) "
+                        f"Cover '{friendly.strip()}' ({cover}) "
                         "does not support positional action",
                         level="DEBUG",
                     )
                     if action == "open":
                         position_requested = 100
                         self.log(
-                            f"Cover '{self.friendly_name(entity_id=cover).strip()}' ({cover}) is not positional, "
+                            f"Cover '{friendly.strip()}' ({cover}) is not positional, "
                             "force position request to 100%",
                             level="DEBUG",
                         )
                     else:
                         position_requested = 0
                         self.log(
-                            f"Cover '{self.friendly_name(entity_id=cover).strip()}' ({cover}) is not positional, "
+                            f"Cover '{friendly.strip()}' ({cover}) is not positional, "
                             "force position request to 0%",
                             level="DEBUG",
                         )
@@ -788,7 +795,7 @@ class CoversManager(hass.Hass):
                     covers_to_move.append(cover)
                 else:
                     self.log(
-                        f"Cover '{self.friendly_name(entity_id=cover).strip()}' ({cover}) is already opened "
+                        f"Cover '{friendly.strip()}' ({cover}) is already opened "
                         f"at configured position ({position_requested}%)",
                         level="DEBUG",
                     )
@@ -877,6 +884,7 @@ class CoversManager(hass.Hass):
             )
         else:
             for cover in covers.copy():
+                friendly = self.get_state(cover, attribute="friendly_name") or cover
                 manual_lock_entity = self._get_manuallock_entity(cover=cover)
                 if self.get_state(entity_id=manual_lock_entity["name"]) == "on":
                     manual_lock_handle = self.get_state(
@@ -886,7 +894,7 @@ class CoversManager(hass.Hass):
                     if info_timer_result is not None:
                         handler_end, _, _ = info_timer_result
                         self.log(
-                            f"Cover '{self.friendly_name(entity_id=cover).strip()}' ({cover}) "
+                            f"Cover '{friendly.strip()}' ({cover}) "
                             "is locked following a manual change. All move are blocked until manual lock "
                             f"is released (end: {handler_end.strftime('%Y-%m-%d %H:%M:%S')})",
                             level="INFO",
@@ -926,16 +934,17 @@ class CoversManager(hass.Hass):
             None
         """
         current_position = self._get_cover_currentposition(cover=kwargs["cover"])
+        friendly = self.get_state(kwargs['cover'], attribute="friendly_name") or kwargs['cover']
         if current_position != kwargs["position_required"]:
             self.log(
-                f"Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) don't have "
+                f"Cover '{friendly.strip()}' ({kwargs['cover']}) don't have "
                 f"the required position ({kwargs['position_required']}%). "
                 f"Current Position : {current_position}%",
                 level="ERROR",
             )
         else:
             self.log(
-                f"Cover '{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) is opened "
+                f"Cover '{friendly.strip()}' ({kwargs['cover']}) is opened "
                 f"as requested at {kwargs['position_required']}%",
                 level="INFO",
             )
@@ -950,8 +959,9 @@ class CoversManager(hass.Hass):
         Returns:
             int | None: The current position of the cover, or None if the position is not available.
         """
+        friendly = self.get_state(cover, attribute="friendly_name") or cover
         self.log(
-            f"Getting Cover '{self.friendly_name(entity_id=cover).strip()}' ({cover}) current position...",
+            f"Getting Cover '{friendly.strip()}' ({cover}) current position...",
             level="DEBUG",
         )
         return self.get_state(entity_id=cover, attribute="current_position")
@@ -973,7 +983,8 @@ class CoversManager(hass.Hass):
         entity = {}
         entity_basename = cover.split(".", 1)[1]
         entity_name = f"{domain}.{entity_basename}_{type.replace(' ', '_').lower()}"
-        entity_friendlyname = f"{self.friendly_name(entity_id=cover).strip()} - {type.title()}"
+        friendly = self.get_state(cover, attribute="friendly_name") or cover
+        entity_friendlyname = f"{friendly.strip()} - {type.title()}"
         entity.update(
             {
                 "base": entity_basename,
@@ -1080,6 +1091,7 @@ class CoversManager(hass.Hass):
         Returns:
             None
         """
+        friendly = self.get_state(entity, attribute="friendly_name") or entity
         # Check if the new position is different from the adaptive position
         if int(new) != int(self.get_state(entity_id=kwargs["adaptive_position_entity"]["name"])):
             lock_duration_minutes = int(kwargs["config"].common.manual.timer.total_seconds() / 60)
@@ -1090,7 +1102,7 @@ class CoversManager(hass.Hass):
             )
             self.log(
                 "MANUAL MOVE DETECTED - Blocking move of cover "
-                f"'{self.friendly_name(entity_id=entity).strip()}' ({entity}) "
+                f"'{friendly.strip()}' ({entity}) "
                 f"for {lock_duration_minutes} minutes",
                 level="INFO",
             )
@@ -1102,7 +1114,7 @@ class CoversManager(hass.Hass):
                 and self.get_state(entity_id=manual_lock_entity["name"], attribute="running_handler") is not None
             ):
                 self.log(
-                    f"Manual lock already exists for cover {self.friendly_name(entity_id=entity).strip()}' ({entity}) "
+                    f"Manual lock already exists for cover {friendly.strip()}' ({entity}) "
                     "- Resetting timer...",
                     level="DEBUG",
                 )
@@ -1130,9 +1142,10 @@ class CoversManager(hass.Hass):
         Returns:
             None
         """
+        friendly = self.get_state(kwargs['cover'], attribute="friendly_name") or kwargs['cover']
         self.log(
             "Manual lock timer ended for cover "
-            f"'{self.friendly_name(entity_id=kwargs['cover']).strip()}' ({kwargs['cover']}) - Unlocking cover",
+            f"'{friendly.strip()}' ({kwargs['cover']}) - Unlocking cover",
             level="INFO",
         )
         # Update the manual lock entity
