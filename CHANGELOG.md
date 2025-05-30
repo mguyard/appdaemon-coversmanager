@@ -1,3 +1,10 @@
+# [2.1.0-beta.3](https://github.com/mguyard/appdaemon-coversmanager/compare/v2.1.0-beta.2...v2.1.0-beta.3) (2025-05-30)
+
+
+### Bug Fixes
+
+* **covers_manager:** ✨ Fix logging to use friendly names for covers ([8be2b72](https://github.com/mguyard/appdaemon-coversmanager/commit/8be2b720371c6582706253cfb803feb7cbc66e1a))
+
 # [2.1.0-beta.2](https://github.com/mguyard/appdaemon-coversmanager/compare/v2.1.0-beta.1...v2.1.0-beta.2) (2024-12-21)
 
 
