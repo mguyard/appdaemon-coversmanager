@@ -1,3 +1,25 @@
+# [2.1.0-beta.3](https://github.com/mguyard/appdaemon-coversmanager/compare/v2.1.0-beta.2...v2.1.0-beta.3) (2025-05-30)
+
+
+### Bug Fixes
+
+* **covers_manager:** ✨ Fix logging to use friendly names for covers ([8be2b72](https://github.com/mguyard/appdaemon-coversmanager/commit/8be2b720371c6582706253cfb803feb7cbc66e1a))
+
+# [2.1.0-beta.2](https://github.com/mguyard/appdaemon-coversmanager/compare/v2.1.0-beta.1...v2.1.0-beta.2) (2024-12-21)
+
+
+### Features
+
+* Add bypass option for global locker in closing configuration and update logging levels ([584f108](https://github.com/mguyard/appdaemon-coversmanager/commit/584f108e88618fac274d630dac772e88a21f05c9))
+
+# [2.1.0-beta.1](https://github.com/mguyard/appdaemon-coversmanager/compare/v2.0.0...v2.1.0-beta.1) (2024-11-30)
+
+
+### Features
+
+* Add seasonal position configuration for opening and closing - Issue [#55](https://github.com/mguyard/appdaemon-coversmanager/issues/55). Include also fix for unpositional covers for closing. ATTENTION : Need to restart AppDaemon Addon to avoid errors ([5bd9721](https://github.com/mguyard/appdaemon-coversmanager/commit/5bd97216c067664372871dfef34711abc691fb12))
+* Allow support of input_boolean on locker entity (in addition of binary_sensor) - Issue [#54](https://github.com/mguyard/appdaemon-coversmanager/issues/54). ATTENTION : Need to restart AppDaemon Addon to avoid errors ([a4e9341](https://github.com/mguyard/appdaemon-coversmanager/commit/a4e9341639688c5dcaa9d2053f2e70abf86e8a4d))
+
 # [2.0.0](https://github.com/mguyard/appdaemon-coversmanager/compare/v1.4.0...v2.0.0) (2024-11-26)
 
 

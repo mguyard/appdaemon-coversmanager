@@ -1,5 +1,5 @@
 from datetime import time, timedelta
-from typing import Dict, Literal
+from typing import Annotated, Literal
 
 from pydantic import (
     BaseModel,
@@ -10,12 +10,12 @@ from pydantic import (
     model_validator,
 )
 from pydantic.functional_validators import AfterValidator
-from typing_extensions import Annotated, Self
+from typing_extensions import Self
 
 import CoversManagerLibs.utils as Utils
 
 sensor_entity_format = Annotated[str, AfterValidator(Utils.isEntityFormat)]
-binary_sensor_entity_format = Annotated[str, AfterValidator(Utils.isBinarySensorEntityFormat)]
+locker_format = Annotated[str, AfterValidator(Utils.isLockerEntityFormat)]
 time_ = time  # To resolve issue : https://github.com/pydantic/pydantic/discussions/9284
 
 
@@ -118,11 +118,23 @@ class ManualConfig(BaseModel):
             )
         return self
 
+class OpenCloseSeasonsPositionConfig(BaseModel):
+    spring: int = Field(ge=0, le=100, default=None)
+    summer: int = Field(ge=0, le=100, default=None)
+    autumn: int = Field(ge=0, le=100, default=None)
+    winter: int = Field(ge=0, le=100, default=None)
+
+
+class OpenClosePositionConfig(BaseModel):
+    default: int = Field(ge=0, le=100, default=None)
+    seasons: OpenCloseSeasonsPositionConfig | None = None
+
 
 class OpeningConfig(BaseModel):
     type: Literal["off", "time", "sunrise", "lux", "prefer-lux"] = "off"
     time: time_ | None = None
-    locker: binary_sensor_entity_format | None = None
+    locker: locker_format | None = None
+    position: OpenClosePositionConfig | None = None
 
     @model_validator(mode="after")
     def checks(self) -> Self:
@@ -137,7 +149,9 @@ class ClosingConfig(BaseModel):
     type: Literal["off", "time", "sunset", "lux", "prefer-lux"] = "off"
     time: time_ | None = None
     secure_dusk: bool = False
-    locker: binary_sensor_entity_format | None = None
+    locker: locker_format | None = None
+    bypass_global_locker: bool = False
+    position: OpenClosePositionConfig | None = None
 
     @model_validator(mode="after")
     def checks(self) -> Self:
@@ -157,7 +171,7 @@ class ClosingConfig(BaseModel):
 
 class AdaptiveConfig(BaseModel):
     enable: bool = False
-    locker: binary_sensor_entity_format | None = None
+    locker: locker_format | None = None
 
 
 class CommonConfig(BaseModel):
@@ -168,7 +182,7 @@ class CommonConfig(BaseModel):
     manual: ManualConfig = ManualConfig()
     temperature: TemperatureConfig = TemperatureConfig()
     lux: LuxConfig | None = None
-    locker: binary_sensor_entity_format | None = None
+    locker: locker_format | None = None
     seasons: sensor_entity_format | None = None
 
     @field_validator("position", mode="before")
@@ -223,6 +237,19 @@ class CommonConfig(BaseModel):
                 "Seasons configuration (config.common.seasons) is missing to use "
                 "seasons setpoints (config.common.temperature.indoor.seasons)"
             )
+
+        if (
+            self.seasons is None
+            and (
+                self.opening.position.seasons is not None
+                or self.closing.position.seasons is not None
+            )
+        ):
+            raise ValueError(
+                "Seasons configuration (config.common.seasons) is missing to use "
+                "seasons position for open or close (config.common.opening.position.seasons "
+                "or config.common.closing.position.seasons)"
+            )
         return self
 
 
@@ -256,7 +283,7 @@ class CoversConfig(BaseModel):
 
 
 class CoversName(RootModel):
-    root: Dict[Annotated[str, AfterValidator(Utils.isCoverEntityFormat)], CoversConfig]
+    root: dict[Annotated[str, AfterValidator(Utils.isCoverEntityFormat)], CoversConfig]
 
 
 class Config(BaseModel):
