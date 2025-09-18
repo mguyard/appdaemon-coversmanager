@@ -204,7 +204,7 @@ To do this, go to your AppDaemon add-on configuration and add `pydantic` in the 
 
 ### 🪟 Covers Manager
 
-To configure Covers Manager app you need to edit `apps.yaml` configuration most of the time stored in `/add_config/<guid>_appdaemon/apps/`
+To configure Covers Manager app you need to edit `apps.yaml` configuration most of the time stored in `/homeassistant/appdaemon/apps` (`/homeassistant` refer to the HomeAssistant configuration folder)
 
 Please find below an simple example of configuration to add in file :
 
