@@ -1,3 +1,10 @@
+# [2.2.0-beta.1](https://github.com/mguyard/appdaemon-coversmanager/compare/v2.1.0...v2.2.0-beta.1) (2025-09-19)
+
+
+### Features
+
+* **config:** ✨ Set default value for position in OpeningConfig and ClosingConfig ([f4d02a6](https://github.com/mguyard/appdaemon-coversmanager/commit/f4d02a6c7d1857526ba9a51845345635f4314e50)), closes [#60](https://github.com/mguyard/appdaemon-coversmanager/issues/60)
+
 # [2.1.0](https://github.com/mguyard/appdaemon-coversmanager/compare/v2.0.0...v2.1.0) (2025-09-18)
 
 
