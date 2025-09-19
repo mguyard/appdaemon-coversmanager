@@ -134,7 +134,13 @@ class OpeningConfig(BaseModel):
     type: Literal["off", "time", "sunrise", "lux", "prefer-lux"] = "off"
     time: time_ | None = None
     locker: locker_format | None = None
-    position: OpenClosePositionConfig | None = None
+    position: OpenClosePositionConfig = OpenClosePositionConfig()
+
+    @field_validator("position", mode="before")
+    def position_none_default_values(cls, value):
+        if value is None:
+            return OpenClosePositionConfig()
+        return value
 
     @model_validator(mode="after")
     def checks(self) -> Self:
@@ -151,7 +157,13 @@ class ClosingConfig(BaseModel):
     secure_dusk: bool = False
     locker: locker_format | None = None
     bypass_global_locker: bool = False
-    position: OpenClosePositionConfig | None = None
+    position: OpenClosePositionConfig = OpenClosePositionConfig()
+
+    @field_validator("position", mode="before")
+    def position_none_default_values(cls, value):
+        if value is None:
+            return OpenClosePositionConfig()
+        return value
 
     @model_validator(mode="after")
     def checks(self) -> Self:
