@@ -400,7 +400,9 @@ class CoversManager(hass.Hass):
                 if len(covers_to_move) > 0:
                     self.log(f"Covers list to {kwargs['action']} : {covers_to_move}", level="DEBUG")
                     try:
-                        self._set_openclose_cover_full(covers=covers_to_move, action=kwargs["action"], adaptive=True)
+                        self._set_openclose_cover_full(
+                            covers=covers_to_move, action=kwargs["action"], config=kwargs["config"], adaptive=True
+                        )
                     except ValueError as e:
                         self.log(e, level="ERROR")
                         return
@@ -413,7 +415,11 @@ class CoversManager(hass.Hass):
                     self._set_cover_position(covers=covers_positional, position=target_position)
                 if len(covers_unpositional) > 0:
                     if kwargs["action"] in ["open", "close"]:
-                        self._set_openclose_cover_full(covers=covers_unpositional, action=kwargs["action"])
+                        self._set_openclose_cover_full(
+                            covers=covers_unpositional,
+                            action=kwargs["action"],
+                            config=kwargs["config"]
+                        )
         else:
             self.log(
                 f"All covers are locked by configuration (global and/or {kwargs['action']}). No move allowed",
@@ -821,7 +827,9 @@ class CoversManager(hass.Hass):
                 positional_covers.append(cover)
         return positional_covers
 
-    def _set_openclose_cover_full(self, covers: list, action: str, adaptive: bool = False) -> None:
+    def _set_openclose_cover_full(
+        self, covers: list, action: str, config: ConfigValidator.Config, adaptive: bool = False
+    ) -> None:
         """
         Open or close the covers to a specified position. Used by the _callback_move_covers method.
         So only used for open or close covers (not for adaptive mode)
@@ -829,6 +837,8 @@ class CoversManager(hass.Hass):
         Args:
             covers (list): List of cover entity IDs.
             action (str): Action to perform, either "open" or "close".
+            config (ConfigValidator.Config): Configuration object.
+            adaptive (bool): Whether the covers are being moved in adaptive mode.
 
         Returns:
             None
@@ -858,12 +868,14 @@ class CoversManager(hass.Hass):
                 elif action == "close":
                     self.call_service("cover/close_cover", entity_id=covers)
                 for cover in covers:
-                    self.run_in(
-                        callback=self._callback_verify_cover_status,
-                        delay=60,
-                        cover=cover,
-                        position_required=position_required,
-                    )
+                    self.log(f"Cover Config : {config.covers.root[cover]}", level="DEBUG")
+                    if config.covers.root[cover].positional.status:
+                        self.run_in(
+                            callback=self._callback_verify_cover_status,
+                            delay=60,
+                            cover=cover,
+                            position_required=position_required,
+                        )
 
     def _set_cover_position(self, covers: list, position: int, adaptive: bool = False) -> None:
         """
