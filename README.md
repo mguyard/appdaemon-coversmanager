@@ -1,3 +1,11 @@
+> [!WARNING]
+> Cover Manager is now deprecated in favour of [Adaptive Cover Pro](https://github.com/jrhubott/adaptive-cover-pro).
+> 
+> Sometimes a new solution comes along that is simpler and more effective. In such cases, it makes sense to make way for it.
+> 
+> If you are interested in continuing development, feel free to fork this repository. The code will remain available here, but it will no longer receive updates or maintenance.
+
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/mguyard/appdaemon-coversmanager/main/CoversManager-Logo.png" width="400" />
 </p>
